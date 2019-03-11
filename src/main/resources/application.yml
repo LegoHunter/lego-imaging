@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: lego-imaging
+
+lego:
+   imaging:
+      root-images-folder: C:/Users/tvatt/Desktop/lego-collection-photos
+      root-inventory-items-folder: C:/Users/tvatt/Desktop/lego-collection-photos
+      keywords-key-name: Keywords:
+
+logging:
+  level:
+    root: debug
+
