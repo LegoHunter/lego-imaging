@@ -114,20 +114,10 @@ public class ImageCollectorTest {
                                                .flatMap(imageCollector.keywordsExtractor)
                                                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (k1, k2) -> k1));
                 log.info("path=[{}], map=[{}]", p, map);
-
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
 
-//        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:actual-lego-photos-with-keywords").toURI());
-//        LegoImagingProperties legoImagingProperties = new LegoImagingProperties();
-//        legoImagingProperties.setRootImagesFolder(jpgPath.toFile().getAbsolutePath());
-//        legoImagingProperties.setKeywordsKeyName("Keywords:");
-//        ImageCollector imageCollector = new ImageCollector(legoImagingProperties);
-//        ImageMetadata m = imageCollector.getImageMetadata.apply(jpgPath.toUri().toURL());
-//        Stream<ImageMetadataItem> items = imageCollector.jpgImageMetadataItems.apply(m);
-//        Map<String, String> map = items.filter(imageCollector.keywordsFilter).flatMap(imageCollector.keywordsExtractor).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (k1, k2) -> k1));
-//        System.out.println(map);
     }
 }

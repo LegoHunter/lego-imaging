@@ -33,20 +33,20 @@ public class LegoImagingApplication {
         @Override
         public void run(ApplicationArguments args) throws Exception {
             Map<String, InventoryItem> inventoryItemMap = new ConcurrentHashMap<>();
-            imageCollector.getImagePaths()
-                          .parallelStream()
-                          .map(ImageFileHolder::new)
-                          /* using path, extract all jpeg keywords out of jpg file */
-                          /* move the image file from the root image folder into its own item subdirectory */
-                          /* for all keywords, update the appropriate field in the bricklink_inventory item */
-                          .forEach(ifh -> {
-                              if (ifh.hasUuid()) {
-                                  if (!inventoryItemMap.containsKey(ifh.getUuid())) {
-                                      inventoryItemMap.put(ifh.getUuid(), new InventoryItem());
-                                  }
-                                  inventoryItemMap.get(ifh.getUuid()).getImageFiles().add(ifh);
-                              }
-                          });
+//            imageCollector.getImagePaths()
+//                          .parallelStream()
+//                          .map(ImageFileHolder::new)
+//                          /* using path, extract all jpeg keywords out of jpg file */
+//                          /* move the image file from the root image folder into its own item subdirectory */
+//                          /* for all keywords, update the appropriate field in the bricklink_inventory item */
+//                          .forEach(ifh -> {
+//                              if (ifh.hasUuid()) {
+//                                  if (!inventoryItemMap.containsKey(ifh.getUuid())) {
+//                                      inventoryItemMap.put(ifh.getUuid(), new InventoryItem());
+//                                  }
+//                                  inventoryItemMap.get(ifh.getUuid()).getImageFiles().add(ifh);
+//                              }
+//                          });
             inventoryItemMap.keySet().forEach(k -> {
                 System.out.println("["+k+"]");
             });

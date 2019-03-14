@@ -48,6 +48,22 @@ public class ImageCollector {
         return imagePaths;
     }
 
+    public Function<URL, ImageMetadata> getImageMetadata() {
+        return this.getImageMetadata;
+    }
+
+    public Function<ImageMetadata, Stream<ImageMetadataItem>> getJpgImageMetadataItems() {
+        return jpgImageMetadataItems;
+    }
+
+    public Predicate<ImageMetadataItem> getKeywordsFilter() {
+        return keywordsFilter;
+    }
+
+    public Function<ImageMetadataItem, Stream<Map.Entry<String, String>>> getKeywordsExtractor() {
+        return keywordsExtractor;
+    }
+
     private LegoImagingProperties getLegoImagingProperties() {
         return legoImagingProperties;
     }
@@ -81,7 +97,7 @@ public class ImageCollector {
         private static String pairDelimiter = ";";
 
         static Stream<String> of(String keywordsKeyName, String keywordString, String pairDelimiter) {
-            final Pattern pattern = Pattern.compile("^" + keywordsKeyName + "\\s+?'??(.*?)'??$");
+            final Pattern pattern = Pattern.compile("^" + keywordsKeyName + "\\s+?'?(.*?)'?$");
             Matcher matcher = pattern.matcher(keywordString);
             if (matcher.find()) {
                 return Arrays.stream(matcher.group(1)
@@ -103,6 +119,7 @@ public class ImageCollector {
                 tokens = s.split("=");
             } else {
                 tokens[0] = s;
+                tokens[1] = s;
             }
             return new SimpleEntry<>(tokens[0], tokens[1]);
         };

@@ -1,25 +1,63 @@
 package com.vattima.lego.imaging.model;
 
-import static org.apache.commons.imaging.common.ImageMetadata.ImageMetadataItem;
-import static org.assertj.core.api.Assertions.assertThat;
-
+import com.vattima.lego.imaging.config.LegoImagingProperties;
+import com.vattima.lego.imaging.file.ImageCollector;
 import org.junit.Test;
+import org.springframework.util.ResourceUtils;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.Map;
-import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ImageFileHolderTest {
 
     @Test
-    public void extractKeywords() throws Exception {
-        Path jpgPath = Paths.get(ClassLoader.getSystemResource("jpgs/jpeg-with-keywords.jpg").toURI());
-        ImageFileHolder imageFileHolder = new ImageFileHolder(jpgPath);
-        imageFileHolder.extractKeywords(p -> Stream.empty());
+    public void getKeywords() throws Exception {
+        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:jpgs/jpeg-with-keywords.jpg")
+                                              .toURI());
+        LegoImagingProperties legoImagingProperties = new LegoImagingProperties();
+        legoImagingProperties.setKeywordsKeyName("XPKeywords:");
+        legoImagingProperties.setRootImagesFolder(jpgPath.toFile()
+                                                         .getAbsolutePath());
+        ImageCollector imageCollector = new ImageCollector(legoImagingProperties);
+
+        ImageFileHolder imageFileHolder = new ImageFileHolder(jpgPath, imageCollector);
         assertThat(imageFileHolder.getKeywords()).isNotEmpty();
-        assertThat(imageFileHolder.getKeywords().entrySet()).containsOnly(javaMapEntry("k", "v"));
+        assertThat(imageFileHolder.getKeywords()
+                                  .entrySet())
+                .containsOnly(javaMapEntry("b", "b"),
+                        javaMapEntry("tag1", "a"),
+                        javaMapEntry("tag2", "tag2"),
+                        javaMapEntry("tag3", "123"));
+    }
+
+    @Test
+    public void uuid() throws Exception {
+        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:actual-lego-photos-with-keywords").toURI());
+        LegoImagingProperties legoImagingProperties = new LegoImagingProperties();
+        legoImagingProperties.setKeywordsKeyName("Keywords:");
+        legoImagingProperties.setRootImagesFolder(jpgPath.toFile().getAbsolutePath());
+        ImageCollector imageCollector = new ImageCollector(legoImagingProperties);
+        ImageFileHolder imageFileHolder = new ImageFileHolder(Paths.get(ResourceUtils.getURL("classpath:actual-lego-photos-with-keywords/DSC_0504.JPG").toURI()), imageCollector);
+        assertThat(imageFileHolder.hasUuid()).isTrue();
+        assertThat(imageFileHolder.getUuid()).isEqualTo("fdaa0638814727a42f005656f38b92c6");
+
+    }
+
+    @Test
+    public void bricklinkItem() throws Exception {
+        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:actual-lego-photos-with-keywords").toURI());
+        LegoImagingProperties legoImagingProperties = new LegoImagingProperties();
+        legoImagingProperties.setKeywordsKeyName("Keywords:");
+        legoImagingProperties.setRootImagesFolder(jpgPath.toFile().getAbsolutePath());
+        ImageCollector imageCollector = new ImageCollector(legoImagingProperties);
+        ImageFileHolder imageFileHolder = new ImageFileHolder(Paths.get(ResourceUtils.getURL("classpath:actual-lego-photos-with-keywords/DSC_0504.JPG").toURI()), imageCollector);
+        assertThat(imageFileHolder.hasBricklinkItemNumber()).isTrue();
+        assertThat(imageFileHolder.getBricklinkItemNumber()).isEqualTo("6658-1");
+
     }
 
     private static <K, V> Map.Entry<K, V> javaMapEntry(K key, V value) {
