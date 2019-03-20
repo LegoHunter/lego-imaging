@@ -94,7 +94,7 @@ public class ImageCollector {
                                                                                                     .map(Keywords.tokenizer);
 
     static class Keywords {
-        private static String pairDelimiter = ";";
+        private static String pairDelimiter = "[;,\\s]";
 
         static Stream<String> of(String keywordsKeyName, String keywordString, String pairDelimiter) {
             final Pattern pattern = Pattern.compile("^" + keywordsKeyName + "\\s+?'?(.*?)'?$");
@@ -121,7 +121,7 @@ public class ImageCollector {
                 tokens[0] = s;
                 tokens[1] = s;
             }
-            return new SimpleEntry<>(tokens[0], tokens[1]);
+            return new SimpleEntry<>(tokens[0], (tokens.length==2)?tokens[1]:"");
         };
     }
 }
