@@ -14,8 +14,10 @@ spring:
 logging:
    level:
       root: DEBUG
-      com.vattima.lego.data.ibatis.mapper: DEBUG
-      org.mybatis: DEBUG
+      com.vattima.lego.data.ibatis.mapper: WARN
+      net.bricklink.data: WARN
+      org.springframework.jdbc: WARN
+      org.mybatis: WARN
       com.gargoylesoftware: ERROR
       com.gargoylesoftware.htmlunit.javascript.StrictErrorReporter: OFF
       com.zaxxer: WARN
@@ -41,6 +43,13 @@ lego:
       root-images-folder: C:/Users/tvatt/Desktop/lego-collection-photos
       root-inventory-items-folder: C:/Users/tvatt/Desktop/lego-collection-photos
       keywords-key-name: "Keywords:"
+
+flickr:
+   client-config-dir: C:\Users\tvatt\.credentials\flickr.api
+   client-config-file: flickr-client-api-keys.json
+   application-name: lego-imaging
+   debug-request: false
+   debug-stream: false
 
 mybatis:
    type-aliases-package: com.vattima.lego.data.ibatis.type.aliases
