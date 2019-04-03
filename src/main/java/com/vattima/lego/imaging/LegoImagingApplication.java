@@ -1,23 +1,24 @@
 package com.vattima.lego.imaging;
 
+import com.vattima.lego.imaging.config.LegoImagingProperties;
 import com.vattima.lego.imaging.file.ImageCollector;
+import com.vattima.lego.imaging.flickr.configuration.FlickrProperties;
+import com.vattima.lego.imaging.model.AlbumManifest;
 import com.vattima.lego.imaging.model.ImageFileHolder;
-import com.vattima.lego.imaging.model.InventoryItem;
+import com.vattima.lego.imaging.service.AlbumManager;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
+import net.bricklink.data.lego.dao.BricklinkInventoryDao;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-
-@SpringBootApplication
+@EnableConfigurationProperties
+@SpringBootApplication(scanBasePackages = {"net.bricklink", "com.bricklink", "com.vattima"})
+@Slf4j
 public class LegoImagingApplication {
 
 
@@ -29,27 +30,21 @@ public class LegoImagingApplication {
     @RequiredArgsConstructor
     private class ImageRunner implements ApplicationRunner {
         private final ImageCollector imageCollector;
+        private final LegoImagingProperties legoImagingProperties;
+        private final FlickrProperties flickrProperties;
+        private final BricklinkInventoryDao bricklinkInventoryDao;
+        private final AlbumManager albumManager;
 
         @Override
         public void run(ApplicationArguments args) throws Exception {
-            Map<String, InventoryItem> inventoryItemMap = new ConcurrentHashMap<>();
+            log.info("Flickr Properties: [{}]", flickrProperties);
             imageCollector.getImagePaths()
-                          .parallelStream()
-                          .map(ImageFileHolder::new)
-                          /* using path, extract all jpeg keywords out of jpg file */
-                          /* move the image file from the root image folder into its own item subdirectory */
-                          /* for all keywords, update the appropriate field in the bricklink_inventory item */
-                          .forEach(ifh -> {
-                              if (ifh.hasUuid()) {
-                                  if (!inventoryItemMap.containsKey(ifh.getUuid())) {
-                                      inventoryItemMap.put(ifh.getUuid(), new InventoryItem());
-                                  }
-                                  inventoryItemMap.get(ifh.getUuid()).getImageFiles().add(ifh);
-                              }
+                          .forEach(p -> {
+                              ImageFileHolder imageFileHolder = new ImageFileHolder(p, imageCollector, bricklinkInventoryDao, legoImagingProperties);
+                              imageFileHolder.updateInventoryFromKeywords();
+                              albumManager.addPhoto(imageFileHolder);
+                              //imageFileHolder.move();
                           });
-            inventoryItemMap.keySet().forEach(k -> {
-                System.out.println("["+k+"]");
-            });
         }
     }
 

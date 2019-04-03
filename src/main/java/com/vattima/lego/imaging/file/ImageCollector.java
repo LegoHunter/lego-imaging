@@ -20,8 +20,11 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import static java.util.AbstractMap.SimpleEntry;
 import static org.apache.commons.imaging.common.ImageMetadata.ImageMetadataItem;
 
 @Component
@@ -45,7 +48,27 @@ public class ImageCollector {
         return imagePaths;
     }
 
-    public Function<URL, ImageMetadata> getImageMetadata = u -> {
+    public Function<URL, ImageMetadata> getImageMetadata() {
+        return this.getImageMetadata;
+    }
+
+    public Function<ImageMetadata, Stream<ImageMetadataItem>> getJpgImageMetadataItems() {
+        return jpgImageMetadataItems;
+    }
+
+    public Predicate<ImageMetadataItem> getKeywordsFilter() {
+        return keywordsFilter;
+    }
+
+    public Function<ImageMetadataItem, Stream<Map.Entry<String, String>>> getKeywordsExtractor() {
+        return keywordsExtractor;
+    }
+
+    private LegoImagingProperties getLegoImagingProperties() {
+        return legoImagingProperties;
+    }
+
+    Function<URL, ImageMetadata> getImageMetadata = u -> {
         try {
             return Imaging.getMetadata(new File(u.toURI()));
         } catch (ImageReadException | URISyntaxException | IOException e) {
@@ -53,7 +76,7 @@ public class ImageCollector {
         }
     };
 
-    public Function<ImageMetadata, Stream<ImageMetadataItem>> jpgImageMetadataItems = m -> {
+    Function<ImageMetadata, Stream<ImageMetadataItem>> jpgImageMetadataItems = m -> {
         if (m instanceof JpegImageMetadata) {
             final JpegImageMetadata jpegMetadata = (JpegImageMetadata) m;
             return jpegMetadata.getItems()
@@ -63,35 +86,42 @@ public class ImageCollector {
         }
     };
 
-    public Predicate<ImageMetadataItem> keywordsFilter = m -> Optional.of(m.toString())
-                                                                      .map(s -> s.startsWith(getLegoImagingProperties().getKeywordsKeyName()))
-                                                                      .orElse(false);
+    Predicate<ImageMetadataItem> keywordsFilter = m -> Optional.of(m.toString())
+                                                               .map(s -> s.startsWith(getLegoImagingProperties().getKeywordsKeyName()))
+                                                               .orElse(false);
 
-    public LegoImagingProperties getLegoImagingProperties() {
-        return legoImagingProperties;
+    Function<ImageMetadataItem, Stream<Map.Entry<String, String>>> keywordsExtractor = m -> Keywords.of(getLegoImagingProperties().getKeywordsKeyName(), m.toString())
+                                                                                                    .map(Keywords.tokenizer);
+
+    static class Keywords {
+        private static String pairDelimiter = "[;,\\s]";
+
+        static Stream<String> of(String keywordsKeyName, String keywordString, String pairDelimiter) {
+            final Pattern pattern = Pattern.compile("^" + keywordsKeyName + "\\s+?'?(.*?)'?$");
+            Matcher matcher = pattern.matcher(keywordString);
+            if (matcher.find()) {
+                return Arrays.stream(matcher.group(1)
+                                            .split(pairDelimiter));
+            } else {
+                return Stream.empty();
+            }
+        }
+
+        static Stream<String> of(String keywordsKeyName, String keywordString) {
+            return of(keywordsKeyName, keywordString, pairDelimiter);
+        }
+
+        static Function<String, SimpleEntry<String, String>> tokenizer = s -> {
+            String[] tokens = new String[]{"", ""};
+            if (s.contains(":")) {
+                tokens = s.split(":");
+            } else if (s.contains("=")) {
+                tokens = s.split("=");
+            } else {
+                tokens[0] = s;
+                tokens[1] = s;
+            }
+            return new SimpleEntry<>(tokens[0], (tokens.length==2)?tokens[1]:"");
+        };
     }
-
-    public Function<ImageMetadataItem, Map<String, String>> keywordsExtractor = m -> Collections.emptyMap();
-
-//    public Map<String, String> getKeywords(Path path) {
-//        // get all metadata stored in EXIF format (ie. from JPEG or TIFF).
-//        File file = path.toFile();
-//        final ImageMetadata metadata;
-//        Map<String, String> keywords = new HashMap<>();
-//        try {
-//            metadata = Imaging.getMetadata(file);
-//            if (metadata instanceof JpegImageMetadata) {
-//                final JpegImageMetadata jpegMetadata = (JpegImageMetadata) metadata;
-//
-//                return keywordsExtractor.apply(jpegMetadata.getItems());
-//                keywords = jpegMetadata.getItems()
-//                                       .stream()
-//                                       .map(keywordsExtractor)
-//                                       .collect(Collectors.toMap(kv -> kv[0], kv -> kv[1], (k, v) -> v));
-//            }
-//        } catch (ImageReadException | IOException e) {
-//            log.error(e.getMessage(), e);
-//        }
-//        return keywords;
-//    }
 }
