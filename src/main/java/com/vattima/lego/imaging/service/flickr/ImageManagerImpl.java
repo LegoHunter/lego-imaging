@@ -98,6 +98,10 @@ public class ImageManagerImpl implements ImageManager {
                 });
     }
 
+    public LegoImagingProperties getLegoImagingProperties() {
+        return legoImagingProperties;
+    }
+
     private static String bytesToHex(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
         for (int j = 0; j < bytes.length; j++) {
@@ -145,10 +149,10 @@ public class ImageManagerImpl implements ImageManager {
     };
 
     Predicate<ImageMetadata.ImageMetadataItem> keywordsFilter = m -> Optional.of(m.toString())
-                                                                             .map(s -> s.startsWith(legoImagingProperties.getKeywordsKeyName()))
+                                                                             .map(s -> s.startsWith(getLegoImagingProperties().getKeywordsKeyName()))
                                                                              .orElse(false);
 
-    Function<ImageMetadata.ImageMetadataItem, Stream<Map.Entry<String, String>>> keywordsExtractor = m -> Keywords.of(legoImagingProperties.getKeywordsKeyName(), m.toString())
+    Function<ImageMetadata.ImageMetadataItem, Stream<Map.Entry<String, String>>> keywordsExtractor = m -> Keywords.of(getLegoImagingProperties().getKeywordsKeyName(), m.toString())
                                                                                                                   .map(Keywords.tokenizer);
 
     static class Keywords {

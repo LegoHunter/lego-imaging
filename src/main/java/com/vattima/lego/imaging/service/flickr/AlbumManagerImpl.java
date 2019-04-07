@@ -116,7 +116,7 @@ public class AlbumManagerImpl implements AlbumManager {
     }
 
     public Path getAlbumManifestPath(PhotoMetaData photoMetaData) {
-        return Paths.get(legoImagingProperties.getRootInventoryItemsFolder() + "/" + photoMetaData.getKeyword("bl") + "-" + photoMetaData.getKeyword("uuid"));
+        return Paths.get(legoImagingProperties.getRootImagesFolder() + "/" + photoMetaData.getKeyword("bl") + "-" + photoMetaData.getKeyword("uuid"));
     }
 
     public Path getAlbumManifestFile(PhotoMetaData photoMetaData) {
