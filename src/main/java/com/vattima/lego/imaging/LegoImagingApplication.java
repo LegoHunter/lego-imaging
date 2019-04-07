@@ -5,6 +5,7 @@ import com.vattima.lego.imaging.file.ImageCollector;
 import com.vattima.lego.imaging.flickr.configuration.FlickrProperties;
 import com.vattima.lego.imaging.model.AlbumManifest;
 import com.vattima.lego.imaging.model.ImageFileHolder;
+import com.vattima.lego.imaging.model.PhotoMetaData;
 import com.vattima.lego.imaging.service.AlbumManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,9 +41,10 @@ public class LegoImagingApplication {
             log.info("Flickr Properties: [{}]", flickrProperties);
             imageCollector.getImagePaths()
                           .forEach(p -> {
+                              PhotoMetaData photoMetaData = new PhotoMetaData(p);
                               ImageFileHolder imageFileHolder = new ImageFileHolder(p, imageCollector, bricklinkInventoryDao, legoImagingProperties);
                               imageFileHolder.updateInventoryFromKeywords();
-                              albumManager.addPhoto(imageFileHolder);
+                              albumManager.addPhoto(photoMetaData);
                               //imageFileHolder.move();
                           });
         }

@@ -28,19 +28,19 @@ public class AlbumManifestTest {
     @Test
     public void getPrimaryPhoto_whenMultiplePhotosWithOnePrimary_returnsOne() {
         AlbumManifest albumManifest = new AlbumManifest();
-        PhotoMetaData pmd1 = new PhotoMetaData();
+        PhotoMetaData pmd1 = new PhotoMetaData(Paths.get("a.jpg"));
         pmd1.setPhotoId("1");
         pmd1.setPrimary(false);
         albumManifest.getPhotos()
                      .add(pmd1);
 
-        PhotoMetaData pmd2 = new PhotoMetaData();
+        PhotoMetaData pmd2 = new PhotoMetaData(Paths.get("b.jpg"));
         pmd2.setPhotoId("2");
         pmd2.setPrimary(true);
         albumManifest.getPhotos()
                      .add(pmd2);
 
-        PhotoMetaData pmd3 = new PhotoMetaData();
+        PhotoMetaData pmd3 = new PhotoMetaData(Paths.get("c.jpg"));
         pmd3.setPhotoId("3");
         pmd3.setPrimary(false);
         albumManifest.getPhotos()
@@ -53,19 +53,19 @@ public class AlbumManifestTest {
     @Test
     public void getPrimaryPhoto_whenMultiplePhotosWithZeroPrimary_returnsFirstPhoto() {
         AlbumManifest albumManifest = new AlbumManifest();
-        PhotoMetaData pmd1 = new PhotoMetaData();
+        PhotoMetaData pmd1 = new PhotoMetaData(Paths.get("a.jpg"));
         pmd1.setPhotoId("1");
         pmd1.setPrimary(false);
         albumManifest.getPhotos()
                      .add(pmd1);
 
-        PhotoMetaData pmd2 = new PhotoMetaData();
+        PhotoMetaData pmd2 = new PhotoMetaData(Paths.get("b.jpg"));
         pmd2.setPhotoId("2");
         pmd2.setPrimary(false);
         albumManifest.getPhotos()
                      .add(pmd2);
 
-        PhotoMetaData pmd3 = new PhotoMetaData();
+        PhotoMetaData pmd3 = new PhotoMetaData(Paths.get("c.jpg"));
         pmd3.setPhotoId("3");
         pmd3.setPrimary(false);
         albumManifest.getPhotos()
@@ -122,7 +122,7 @@ public class AlbumManifestTest {
         }
         outputAlbumManifest.setUuid("fdaa0638814727a42f005656f38b92c6");
 
-        PhotoMetaData pmd = new PhotoMetaData();
+        PhotoMetaData pmd = new PhotoMetaData(Paths.get("c:\\temp\\a.jpg"));
         pmd.setPhotoId("01982395801283923");
         pmd.setPrimary(true);
         pmd.setMd5("ABC123");
@@ -130,7 +130,7 @@ public class AlbumManifestTest {
         pmd.setUploadReturnCode(0);
         outputAlbumManifest.getPhotos().add(pmd);
 
-        pmd = new PhotoMetaData();
+        pmd = new PhotoMetaData(Paths.get("c:\\temp\\b.jpg"));
         pmd.setPhotoId("232403948702304723");
         pmd.setPrimary(false);
         pmd.setMd5("XYZ987");
@@ -138,7 +138,7 @@ public class AlbumManifestTest {
         pmd.setUploadReturnCode(0);
         outputAlbumManifest.getPhotos().add(pmd);
 
-        pmd = new PhotoMetaData();
+        pmd = new PhotoMetaData(Paths.get("c:\\temp\\c.jpg"));
         pmd.setPhotoId("209384702342873");
         pmd.setPrimary(false);
         pmd.setMd5("JKL456");
