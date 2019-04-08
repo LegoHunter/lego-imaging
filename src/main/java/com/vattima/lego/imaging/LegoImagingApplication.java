@@ -42,7 +42,7 @@ public class LegoImagingApplication {
             imageCollector.getImagePaths()
                           .forEach(p -> {
                               PhotoMetaData photoMetaData = new PhotoMetaData(p);
-                              ImageFileHolder imageFileHolder = new ImageFileHolder(p, imageCollector, bricklinkInventoryDao, legoImagingProperties);
+                              ImageFileHolder imageFileHolder = new ImageFileHolder(p, imageCollector, bricklinkInventoryDao);
                               imageFileHolder.updateInventoryFromKeywords();
                               albumManager.addPhoto(photoMetaData);
                               //imageFileHolder.move();
