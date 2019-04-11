@@ -7,7 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.vattima.lego.imaging.LegoImagingException;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.io.IOException;
 import java.net.URL;
@@ -17,11 +19,14 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-@Data
+@Getter
+@Setter
+@ToString
 @JsonInclude(Include.NON_NULL)
 public class AlbumManifest {
     private String photosetId;
@@ -39,7 +44,8 @@ public class AlbumManifest {
     @JsonIgnore
     public Optional<PhotoMetaData> getPhotoByFilename(Path filename) {
         return photos.stream()
-                     .filter(p -> p.getPath().getFileName().equals(filename))
+                     .filter(p -> p.getFilename()
+                                   .equals(filename))
                      .reduce((a, b) -> null);
     }
 
@@ -96,5 +102,18 @@ public class AlbumManifest {
             throw new LegoImagingException(e);
         }
         return albumManifest;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AlbumManifest that = (AlbumManifest) o;
+        return Objects.equals(getUuid(), that.getUuid());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getUuid());
     }
 }

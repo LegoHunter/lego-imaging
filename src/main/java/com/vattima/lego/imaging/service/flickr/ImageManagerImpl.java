@@ -44,9 +44,9 @@ public class ImageManagerImpl implements ImageManager {
     @Override
     public String computeMD5Hash(PhotoMetaData photoMetaData) {
         Path path = Optional.ofNullable(photoMetaData)
-                            .map(PhotoMetaData::getPath)
+                            .map(PhotoMetaData::getAbsolutePath)
                             .filter(p -> Files.exists(p))
-                            .orElseThrow(() -> new LegoImagingException("Path does not exist [" + photoMetaData.getPath() + "]"));
+                            .orElseThrow(() -> new LegoImagingException("Path does not exist [" + photoMetaData.getAbsolutePath() + "]"));
         if (null != photoMetaData.getMd5()) {
             return photoMetaData.getMd5();
         }
@@ -82,7 +82,7 @@ public class ImageManagerImpl implements ImageManager {
                 .orElseGet(() -> {
                     try {
                         ImageMetadata m = getImageMetadata()
-                                .apply(photoMetaData.getPath()
+                                .apply(photoMetaData.getAbsolutePath()
                                                     .toUri()
                                                     .toURL());
                         Stream<ImageMetadata.ImageMetadataItem> items = getJpgImageMetadataItems()

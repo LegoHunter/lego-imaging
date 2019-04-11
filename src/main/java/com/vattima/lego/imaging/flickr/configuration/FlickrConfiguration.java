@@ -7,6 +7,8 @@ import com.flickr4java.flickr.Transport;
 import com.flickr4java.flickr.auth.Auth;
 import com.flickr4java.flickr.auth.Permission;
 import com.flickr4java.flickr.photosets.PhotosetsInterface;
+import com.flickr4java.flickr.uploader.IUploader;
+import com.flickr4java.flickr.uploader.Uploader;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,13 +19,19 @@ import static com.vattima.lego.imaging.flickr.configuration.FlickrProperties.Sec
 public class FlickrConfiguration {
     @Bean
     public Secrets getFlickrSecrets(FlickrProperties flickrProperties, @Value("${flickr.application-name}") String name) {
-        return flickrProperties.getFlickr().getApplication(name).getSecrets();
+        return flickrProperties.getFlickr()
+                               .getApplication(name)
+                               .getSecrets();
+    }
+
+    @Bean
+    public Flickr flickr(final Secrets flickrSecrets, final Transport flickrTransport) {
+        return new Flickr(flickrSecrets.getKey(), flickrSecrets.getSecret(), flickrTransport);
     }
 
     @Bean
     public Transport flickrTransport(FlickrProperties flickrProperties, Secrets flickerSecrets) {
         Transport transport = new REST();
-        new Flickr(flickerSecrets.getKey(), flickerSecrets.getSecret(), transport);
         RequestContext requestContext = RequestContext.getRequestContext();
         Auth auth = new Auth();
         auth.setPermission(Permission.DELETE);
@@ -38,5 +46,10 @@ public class FlickrConfiguration {
     @Bean
     public PhotosetsInterface photosetsInterface(Secrets flickrSecrets, Transport flickrTransport) {
         return new PhotosetsInterface(flickrSecrets.getKey(), flickrSecrets.getSecret(), flickrTransport);
+    }
+
+    @Bean
+    public IUploader uploader(final Flickr flickr) {
+        return flickr.getUploader();
     }
 }

@@ -3,10 +3,14 @@ package com.vattima.lego.imaging.service;
 import com.vattima.lego.imaging.model.AlbumManifest;
 import com.vattima.lego.imaging.model.PhotoMetaData;
 
-public interface AlbumManager {
-    AlbumManifest addPhoto(PhotoMetaData photoMetaData);
+import java.util.Optional;
 
-    AlbumManifest movePhoto(PhotoMetaData photoMetaData);
+public interface AlbumManager {
+    Optional<AlbumManifest> addPhoto(PhotoMetaData photoMetaData);
+
+    Optional<AlbumManifest> movePhoto(PhotoMetaData photoMetaData);
 
     AlbumManifest uploadToPhotoService(PhotoMetaData photoMetaData, AlbumManifest albumManifest);
+
+    Optional<AlbumManifest> getAlbumManifest(String uuid);
 }

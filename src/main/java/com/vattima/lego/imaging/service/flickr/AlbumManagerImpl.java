@@ -36,7 +36,7 @@ public class AlbumManagerImpl implements AlbumManager {
     private Map<String, AlbumManifest> albums = new ConcurrentHashMap<>();
 
     @Override
-    public AlbumManifest addPhoto(PhotoMetaData photoMetaData) {
+    public Optional<AlbumManifest> addPhoto(PhotoMetaData photoMetaData) {
         AlbumManifest albumManifest;
 
         // Extract the keywords from the PhotoMetaData
@@ -45,10 +45,14 @@ public class AlbumManagerImpl implements AlbumManager {
         // get uuid and blItemNumber
         String uuid = photoMetaData.getKeyword("uuid");
         if (null == uuid) {
-            log.warn("Photo [{}] does not contain uuid - photo will not be added to AlbumManifest", photoMetaData.getPath());
-            return null;
+            log.warn("Photo [{}] does not contain keyword uuid - photo will not be added to AlbumManifest", photoMetaData.getPath());
+            return Optional.empty();
         }
         String blItemNumber = photoMetaData.getKeyword("bl");
+        if (null == blItemNumber) {
+            log.warn("Photo [{}] does not contain keyword bl - photo will not be added to AlbumManifest", photoMetaData.getPath());
+            return Optional.empty();
+        }
 
         // get target path for photo
         Path targetPath = getAlbumManifestPath(photoMetaData);
@@ -97,7 +101,14 @@ public class AlbumManagerImpl implements AlbumManager {
                 log.info("MD5 hash has not changed - no upload necessary [{}]", photoMetaDataInAlbum.get());
             } else {
                 // Upload changed photo
-                albumManifest.getPhotos().remove(photoMetaDataInAlbum.get());
+                PhotoMetaData oldPhotoMetaData = photoMetaDataInAlbum.get();
+                photoMetaData.setPhotoId(oldPhotoMetaData.getPhotoId());
+                photoMetaData.setKeywords(oldPhotoMetaData.getKeywords());
+                photoMetaData.setPrimary(oldPhotoMetaData.isPrimary());
+                photoMetaData.setUploadedTimeStamp(null);
+                photoMetaData.setUploadReturnCode(-1);
+                photoMetaData.setChanged(true);
+                albumManifest.getPhotos().remove(oldPhotoMetaData);
                 albumManifest.getPhotos().add(photoMetaData);
                 log.info("MD5 hash has changed from [{}] to [{}] - upload necessary [{}]", photoMetaDataInAlbum.get().getMd5(), photoMetaData.getMd5(), photoMetaData);
             }
@@ -112,7 +123,7 @@ public class AlbumManagerImpl implements AlbumManager {
         // save AlbumManifest
         AlbumManifest.toJson(albumManifestPath, albumManifest);
 
-        return albumManifest;
+        return Optional.of(albumManifest);
     }
 
     public Path getAlbumManifestPath(PhotoMetaData photoMetaData) {
@@ -125,11 +136,12 @@ public class AlbumManagerImpl implements AlbumManager {
 
     @Override
     public AlbumManifest uploadToPhotoService(PhotoMetaData photoMetaData, AlbumManifest albumManifest) {
-        return null;
+        return albumManifest;
     }
 
     @Override
-    public AlbumManifest movePhoto(PhotoMetaData photoMetaData) {
+    public Optional<AlbumManifest> movePhoto(PhotoMetaData photoMetaData) {
+        Optional<AlbumManifest> albumManifest = Optional.empty();
         if (!photoMetaData.canMove()) {
             log.warn("Cannot move image file [{}] - missing required keywords", photoMetaData.getPath());
         } else {
@@ -143,6 +155,11 @@ public class AlbumManagerImpl implements AlbumManager {
                 throw new LegoImagingException(e);
             }
         }
-        return null;
+        return albumManifest;
+    }
+
+    @Override
+    public Optional<AlbumManifest> getAlbumManifest(String uuid) {
+        return Optional.ofNullable(albums.get(uuid));
     }
 }

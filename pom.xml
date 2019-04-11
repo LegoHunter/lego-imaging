@@ -11,8 +11,8 @@
 	<groupId>com.vattima.lego</groupId>
 	<artifactId>lego-imaging</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>lego-imaging</name>
-	<description>Demo project for Spring Boot</description>
+	<name>Lego :: Imaging</name>
+	<description>Lego :: Imaging with Flickr API</description>
 
 	<properties>
 		<java.version>1.8</java.version>
