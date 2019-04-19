@@ -15,7 +15,12 @@ import java.util.Optional;
 @Data
 public class PhotoMetaData {
     @JsonCreator
-    public PhotoMetaData(@JsonProperty("path") Path path) {
+    public PhotoMetaData(@JsonProperty("path") Path path, @JsonProperty("filename") Path filename) {
+        this.path = path;
+        this.filename = this.path.resolve(filename);
+    }
+
+    public PhotoMetaData(Path path) {
         this.path = path.getParent();
         this.filename = path.getFileName();
     }
@@ -32,6 +37,11 @@ public class PhotoMetaData {
     private boolean primary;
     private boolean changed;
 
+    @JsonProperty("filename")
+    public String getFilenameString() {
+        return filename.getFileName().toString();
+    }
+
     @JsonIgnore
     public Path getAbsolutePath() {
         return path.resolve(getFilename());
@@ -42,6 +52,23 @@ public class PhotoMetaData {
         return Optional.ofNullable(keywords)
                        .map(m -> m.get(keyword))
                        .orElse(null);
+    }
+
+    @JsonProperty("primary")
+    public boolean getPrimary() {
+        if (null == keywords) {
+            return this.primary;
+        } else {
+            return Optional.ofNullable(keywords.get("primary")).map(v -> v.equals("primary")).orElse(false);
+        }
+    }
+
+    public void setPrimary(boolean primary) {
+        this.primary = primary;
+    }
+
+    public void setPrimary(String primary) {
+        this.primary = Optional.ofNullable(primary).map(p -> p.equals("primary")).orElse(false);
     }
 
     @JsonIgnore

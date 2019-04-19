@@ -39,9 +39,6 @@ public class AlbumManifest {
     private boolean isNew;
 
     @JsonIgnore
-    private Path path;
-
-    @JsonIgnore
     public Optional<PhotoMetaData> getPhotoByFilename(Path filename) {
         return photos.stream()
                      .filter(p -> p.getFilename()
@@ -52,7 +49,7 @@ public class AlbumManifest {
     @JsonIgnore
     public PhotoMetaData getPrimaryPhoto() {
         Optional<PhotoMetaData> primary = photos.stream()
-                                                .filter(PhotoMetaData::isPrimary)
+                                                .filter(PhotoMetaData::getPrimary)
                                                 .reduce((a, b) -> null);
         return primary.orElseGet(() -> {
             if (photos.size() > 0) {

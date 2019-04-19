@@ -10,10 +10,12 @@ import com.vattima.lego.imaging.model.AlbumManifest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StopWatch;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
@@ -26,29 +28,33 @@ public class PhotoServiceUploadManagerImpl implements PhotoServiceUploadManager 
     private final PhotosetsInterface photosetsInterface;
     private final IUploader uploader;
 
-    private Set<Path> albumManifestPaths = new HashSet<>();
+    private Set<AlbumManifest> albumManifests = new HashSet<>();
 
     @Override
-    public void queue(Path albumManifestPath) {
-        albumManifestPaths.add(albumManifestPath);
+    public void queue(AlbumManifest albumManifest) {
+        albumManifests.add(albumManifest);
     }
 
     @Override
     public void updateAll() {
-        albumManifestPaths.forEach(p -> {
-            AlbumManifest albumManifest = AlbumManifest.fromJson(p);
+        albumManifests.forEach(a -> {
 
             // Upload all new/changed photos
-            albumManifest.getPhotos()
+            a.getPhotos()
                          .forEach(pmd -> {
                              try {
                                  if (Optional.ofNullable(pmd.getPhotoId())
                                              .isPresent()) {
                                      if (pmd.isChanged()) {
-                                         log.info("Uploading [{}]", pmd);
+                                         log.info("Uploading changed photo [{}]", pmd);
+                                         StopWatch timer = new StopWatch();
+                                         timer.start();
                                          String response = uploader.replace(Files.readAllBytes(pmd.getAbsolutePath()), pmd.getPhotoId(), false);
+                                         timer.stop();
                                          pmd.setPhotoId(response);
-                                         log.info("Uploaded [{}]", pmd);
+                                         log.info("Uploaded changed photo [{}] in [{}] ms", pmd, timer.getTotalTimeMillis());
+                                     } else {
+                                         log.info("Photo not changed [{}]", pmd);
                                      }
                                  } else {
                                      UploadMetaData uploadMetaData = new UploadMetaData();
@@ -67,16 +73,22 @@ public class PhotoServiceUploadManagerImpl implements PhotoServiceUploadManager 
                                      uploadMetaData.setTags(Collections.emptyList());
                                      uploadMetaData.setTitle("Title [" + pmd.getFilename()
                                                                             .toString() + "]");
-                                     log.info("Uploading [{}]", pmd);
+                                     log.info("Uploading new [{}]", pmd);
+                                     StopWatch timer = new StopWatch();
+                                     timer.start();
                                      String response = uploader.upload(Files.readAllBytes(pmd.getAbsolutePath()), uploadMetaData);
+                                     timer.stop();
+                                     pmd.setUploadReturnCode(0);
+                                     pmd.setUploadedTimeStamp(LocalDateTime.now());
                                      pmd.setPhotoId(response);
-                                     log.info("Uploaded [{}]", pmd);
+                                     log.info("Uploaded new [{}] in [{}] ms", pmd, timer.getTotalTimeMillis());
                                  }
                              } catch (FlickrException | IOException e) {
+                                 pmd.setUploadReturnCode(-1);
                                  throw new LegoImagingException(e);
                              }
                          });
-            AlbumManifest.toJson(p, albumManifest);
         });
+        albumManifests.clear();
     }
 }

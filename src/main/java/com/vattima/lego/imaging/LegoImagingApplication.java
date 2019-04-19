@@ -41,7 +41,7 @@ public class LegoImagingApplication {
             log.info("Flickr Properties: [{}]", flickrProperties);
             imageCollector.getImagePaths()
                           .forEach(p -> {
-                              PhotoMetaData photoMetaData = new PhotoMetaData(p);
+                              PhotoMetaData photoMetaData = new PhotoMetaData(p.getParent(), p.getFileName());
                               ImageFileHolder imageFileHolder = new ImageFileHolder(p, imageCollector, bricklinkInventoryDao);
                               imageFileHolder.updateInventoryFromKeywords();
                               albumManager.addPhoto(photoMetaData);

@@ -9,16 +9,14 @@ import com.vattima.lego.imaging.model.ImageFileHolder;
 import com.vattima.lego.imaging.model.PhotoMetaData;
 import com.vattima.lego.imaging.service.AlbumManager;
 import com.vattima.lego.imaging.service.ImageManager;
+import com.vattima.lego.imaging.service.PhotoServiceUploadManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.bricklink.data.lego.dao.BricklinkInventoryDao;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,18 +27,26 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AlbumManagerImpl implements AlbumManager {
     private final ImageManager imageManager;
     private final LegoImagingProperties legoImagingProperties;
-    private final ImageCollector imageCollector;
-    private final FlickrProperties flickrProperties;
-    private final BricklinkInventoryDao bricklinkInventoryDao;
+    private final PhotoServiceUploadManager photoServiceUploadManager;
 
     private Map<String, AlbumManifest> albums = new ConcurrentHashMap<>();
+
+    @Override
+    public AlbumManifest readAlbumManifest(Path path) {
+        return AlbumManifest.fromJson(path);
+    }
+
+    @Override
+    public void writeAlbumManifest(AlbumManifest albumManifest) {
+        AlbumManifest.toJson(getAlbumManifestFile(albumManifest), albumManifest);
+    }
 
     @Override
     public Optional<AlbumManifest> addPhoto(PhotoMetaData photoMetaData) {
         AlbumManifest albumManifest;
 
         // Extract the keywords from the PhotoMetaData
-        imageManager.extractKeywords(photoMetaData);
+        imageManager.getKeywords(photoMetaData);
 
         // get uuid and blItemNumber
         String uuid = photoMetaData.getKeyword("uuid");
@@ -73,7 +79,7 @@ public class AlbumManagerImpl implements AlbumManager {
             // check for existence of AlbumManifest json file
             if (Files.exists(albumManifestPath)) {
                 // If it exists, read it into an AlbumManifest
-                albumManifest = AlbumManifest.fromJson(albumManifestPath);
+                albumManifest = readAlbumManifest(albumManifestPath);
                 log.info("Read AlbumManifest [{}] from file [{}]", albumManifest, albumManifestPath);
             } else {
                 // else if it doesn't exist, create an empty AlbumManifest
@@ -104,39 +110,63 @@ public class AlbumManagerImpl implements AlbumManager {
                 PhotoMetaData oldPhotoMetaData = photoMetaDataInAlbum.get();
                 photoMetaData.setPhotoId(oldPhotoMetaData.getPhotoId());
                 photoMetaData.setKeywords(oldPhotoMetaData.getKeywords());
-                photoMetaData.setPrimary(oldPhotoMetaData.isPrimary());
+                photoMetaData.setPrimary(oldPhotoMetaData.getPrimary());
+                photoMetaData.setMd5(md5Hash);
                 photoMetaData.setUploadedTimeStamp(null);
                 photoMetaData.setUploadReturnCode(-1);
                 photoMetaData.setChanged(true);
-                albumManifest.getPhotos().remove(oldPhotoMetaData);
-                albumManifest.getPhotos().add(photoMetaData);
-                log.info("MD5 hash has changed from [{}] to [{}] - upload necessary [{}]", photoMetaDataInAlbum.get().getMd5(), photoMetaData.getMd5(), photoMetaData);
+                albumManifest.getPhotos()
+                             .remove(oldPhotoMetaData);
+                albumManifest.getPhotos()
+                             .add(photoMetaData);
+                movePhoto(photoMetaData);
+                photoServiceUploadManager.queue(albumManifest);
+                log.info("MD5 hash has changed from [{}] to [{}] - upload necessary [{}]", photoMetaDataInAlbum.get()
+                                                                                                               .getMd5(), photoMetaData.getMd5(), photoMetaData);
             }
         } else {
             // Add photo to manifest and upload it.
             albumManifest.getPhotos()
                          .add(photoMetaData);
+            movePhoto(photoMetaData);
+            photoServiceUploadManager.queue(albumManifest);
             log.info("Added photo [{}] to album manifest [{}]", photoMetaData, albumManifest);
             log.info("New Photo - upload necessary [{}]", photoMetaData);
         }
 
         // save AlbumManifest
-        AlbumManifest.toJson(albumManifestPath, albumManifest);
+        writeAlbumManifest(albumManifest);
 
         return Optional.of(albumManifest);
     }
 
     public Path getAlbumManifestPath(PhotoMetaData photoMetaData) {
-        return Paths.get(legoImagingProperties.getRootImagesFolder() + "/" + photoMetaData.getKeyword("bl") + "-" + photoMetaData.getKeyword("uuid"));
+        return getAlbumManifestPath(photoMetaData.getKeyword("uuid"), photoMetaData.getKeyword("bl"));
     }
 
     public Path getAlbumManifestFile(PhotoMetaData photoMetaData) {
-        return Paths.get(getAlbumManifestPath(photoMetaData) + "/" + photoMetaData.getKeyword("bl") + "-" + photoMetaData.getKeyword("uuid") + "-manifest.json");
+        return getAlbumManifestFile(photoMetaData.getKeyword("uuid"), photoMetaData.getKeyword("bl"));
+    }
+
+    public Path getAlbumManifestPath(AlbumManifest albumManifest) {
+        return getAlbumManifestPath(albumManifest.getUuid(), albumManifest.getBlItemNumber());
+    }
+
+    public Path getAlbumManifestFile(AlbumManifest albumManifest) {
+        return getAlbumManifestFile(albumManifest.getUuid(), albumManifest.getBlItemNumber());
+    }
+
+    public Path getAlbumManifestPath(String uuid, String blItemNumber) {
+        return Paths.get(legoImagingProperties.getRootImagesFolder() + "/" + blItemNumber + "-" + uuid);
+    }
+
+    public Path getAlbumManifestFile(String uuid, String blItemNumber) {
+        return Paths.get(getAlbumManifestPath(uuid, blItemNumber) + "/" + blItemNumber + "-" + uuid + "-manifest.json");
     }
 
     @Override
-    public AlbumManifest uploadToPhotoService(PhotoMetaData photoMetaData, AlbumManifest albumManifest) {
-        return albumManifest;
+    public void updatePhotoService() {
+        photoServiceUploadManager.updateAll();
     }
 
     @Override
@@ -146,11 +176,21 @@ public class AlbumManagerImpl implements AlbumManager {
             log.warn("Cannot move image file [{}] - missing required keywords", photoMetaData.getPath());
         } else {
             try {
-                Path targetPath = getAlbumManifestPath(photoMetaData);
+                albumManifest = Optional.ofNullable(albums.get(photoMetaData.getKeyword("uuid")));
+                Path targetPath = getAlbumManifestPath(albumManifest.get());
                 if (!Files.exists(targetPath, LinkOption.NOFOLLOW_LINKS)) {
                     Files.createDirectory(targetPath);
+                    log.info("Created directory path [{}]", targetPath);
                 }
-                Files.move(photoMetaData.getPath(), Paths.get(targetPath + "/" + photoMetaData.getFilename()));
+                Path targetFile = targetPath.resolve(photoMetaData.getFilename());
+                if (Files.exists(targetFile, LinkOption.NOFOLLOW_LINKS)) {
+                    Files.delete(targetFile);
+                    log.info("Deleted existing image [{}]", targetFile);
+                }
+                Files.copy(photoMetaData.getAbsolutePath(), targetFile, StandardCopyOption.REPLACE_EXISTING);
+                log.info("Copied image from [{}] to [{}]", photoMetaData.getAbsolutePath(), targetFile);
+                Files.delete(photoMetaData.getAbsolutePath());
+                log.info("Deleted old image [{}]", photoMetaData.getAbsolutePath());
             } catch (IOException e) {
                 throw new LegoImagingException(e);
             }

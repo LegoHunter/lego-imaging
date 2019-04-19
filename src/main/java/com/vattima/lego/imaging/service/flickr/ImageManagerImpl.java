@@ -1,7 +1,6 @@
 package com.vattima.lego.imaging.service.flickr;
 
 import com.vattima.lego.imaging.LegoImagingException;
-import com.vattima.lego.imaging.config.LegoImagingProperties;
 import com.vattima.lego.imaging.model.PhotoMetaData;
 import com.vattima.lego.imaging.service.ImageManager;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +19,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.DigestInputStream;
@@ -36,10 +36,19 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
-@RequiredArgsConstructor
 @Component
+@RequiredArgsConstructor
 public class ImageManagerImpl implements ImageManager {
-    private final LegoImagingProperties legoImagingProperties;
+    private final String keywordsName;
+
+    @Override
+    public DirectoryStream<Path> imagePaths(Path path) {
+        try {
+            return Files.newDirectoryStream(path, "*.jpg");
+        } catch (IOException e) {
+            throw new LegoImagingException(e);
+        }
+    }
 
     @Override
     public String computeMD5Hash(PhotoMetaData photoMetaData) {
@@ -76,8 +85,8 @@ public class ImageManagerImpl implements ImageManager {
     }
 
     @Override
-    public void extractKeywords(PhotoMetaData photoMetaData) {
-        Optional.ofNullable(photoMetaData.getKeywords())
+    public Map<String, String> getKeywords(PhotoMetaData photoMetaData) {
+        return Optional.ofNullable(photoMetaData.getKeywords())
                 .filter(m -> !m.isEmpty())
                 .orElseGet(() -> {
                     try {
@@ -98,8 +107,8 @@ public class ImageManagerImpl implements ImageManager {
                 });
     }
 
-    public LegoImagingProperties getLegoImagingProperties() {
-        return legoImagingProperties;
+    private String getKeywordsName() {
+        return keywordsName;
     }
 
     private static String bytesToHex(byte[] bytes) {
@@ -149,10 +158,10 @@ public class ImageManagerImpl implements ImageManager {
     };
 
     Predicate<ImageMetadata.ImageMetadataItem> keywordsFilter = m -> Optional.of(m.toString())
-                                                                             .map(s -> s.startsWith(getLegoImagingProperties().getKeywordsKeyName()))
+                                                                             .map(s -> s.startsWith(getKeywordsName()))
                                                                              .orElse(false);
 
-    Function<ImageMetadata.ImageMetadataItem, Stream<Map.Entry<String, String>>> keywordsExtractor = m -> Keywords.of(getLegoImagingProperties().getKeywordsKeyName(), m.toString())
+    Function<ImageMetadata.ImageMetadataItem, Stream<Map.Entry<String, String>>> keywordsExtractor = m -> Keywords.of(getKeywordsName(), m.toString())
                                                                                                                   .map(Keywords.tokenizer);
 
     static class Keywords {
