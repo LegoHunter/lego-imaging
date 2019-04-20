@@ -37,7 +37,7 @@ public class AlbumManagerImplTest {
         legoImagingProperties.setKeywordsKeyName("Keywords:");
         bricklinkInventoryDao = mock(BricklinkInventoryDao.class);
         photoServiceUploadManager = mock(PhotoServiceUploadManager.class);
-        imageManager = new ImageManagerImpl(legoImagingProperties.getKeywordsKeyName());
+        imageManager = new ImageManagerImpl();
         albumManager = new AlbumManagerImpl(imageManager, legoImagingProperties, photoServiceUploadManager);
     }
 
@@ -142,7 +142,7 @@ public class AlbumManagerImplTest {
              .map(PhotoMetaData::new)
              .forEach(pmd -> {
                  System.out.println("Processing [" + pmd.getAbsolutePath() + "]");
-                 imageManager.getKeywords(pmd);
+                 imageManager.getKeywords(pmd, legoImagingProperties.getKeywordsKeyName());
                  String uuid = pmd.getKeyword("uuid");
                  Optional<AlbumManifest> albumManifest = albumManager.getAlbumManifest(uuid);
                  assertThat(albumManifest).isNotEmpty();

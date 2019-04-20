@@ -6,7 +6,6 @@ import com.flickr4java.flickr.uploader.IUploader;
 import com.flickr4java.flickr.uploader.UploadMetaData;
 import com.vattima.lego.imaging.TestApplication;
 import com.vattima.lego.imaging.config.LegoImagingProperties;
-import com.vattima.lego.imaging.file.ImageCollector;
 import com.vattima.lego.imaging.flickr.configuration.FlickrConfiguration;
 import com.vattima.lego.imaging.flickr.configuration.FlickrProperties;
 import com.vattima.lego.imaging.model.AlbumManifest;
@@ -15,7 +14,6 @@ import com.vattima.lego.imaging.service.flickr.AlbumManagerImpl;
 import com.vattima.lego.imaging.service.flickr.ImageManagerImpl;
 import com.vattima.lego.imaging.test.UnitTestUtils;
 import lombok.extern.slf4j.Slf4j;
-import net.bricklink.data.lego.dao.BricklinkInventoryDao;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,12 +29,11 @@ import org.springframework.util.ResourceUtils;
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Random;
-
-import static org.mockito.Mockito.mock;
 
 @RunWith(SpringRunner.class)
 @Slf4j
@@ -61,36 +58,38 @@ public class PhotoServiceUploadManagerImplTest {
     public void setup() {
         legoImagingProperties = new LegoImagingProperties();
         legoImagingProperties.setKeywordsKeyName("Keywords:");
-        imageManager = new ImageManagerImpl(legoImagingProperties.getKeywordsKeyName());
+        imageManager = new ImageManagerImpl();
     }
 
     @Test
     public void queue() throws Exception {
         log.info("FlickrProperties [{}]", flickrProperties);
-        PhotoServiceUploadManager photoServiceUploadManager = new PhotoServiceUploadManagerImpl(photosetsInterface, uploader);
+        PhotoServiceUploadManager photoServiceUploadManager = new PhotoServiceUploadManagerImpl(photosetsInterface, uploader, legoImagingProperties);
         albumManager = new AlbumManagerImpl(imageManager, legoImagingProperties, photoServiceUploadManager);
 
-        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:lego-photos-upload-test").toURI());
-        Path jpgChangedPath = Paths.get(ResourceUtils.getURL("classpath:lego-photos-upload-test-changed").toURI());
+        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:lego-photos-upload-test")
+                                              .toURI());
+        Path jpgChangedPath = Paths.get(ResourceUtils.getURL("classpath:lego-photos-upload-test-changed")
+                                                     .toURI());
         UnitTestUtils.deleteSubDirectoriesInPath(jpgPath);
         UnitTestUtils.deleteSubDirectoriesInPath(jpgChangedPath);
         legoImagingProperties.setRootImagesFolder(jpgPath.toAbsolutePath()
                                                          .toString());
 
-        imageManager.imagePaths(jpgPath)
-                    .forEach(p -> {
-                        log.info("Found image [{}]", p);
-                        PhotoMetaData photoMetaData = new PhotoMetaData(p);
-                        Optional<AlbumManifest> albumManifest = albumManager.addPhoto(photoMetaData);
-                    });
+        Files.newDirectoryStream(jpgPath, "*.jpg")
+             .forEach(p -> {
+                 log.info("Found image [{}]", p);
+                 PhotoMetaData photoMetaData = new PhotoMetaData(p);
+                 Optional<AlbumManifest> albumManifest = albumManager.addPhoto(photoMetaData);
+             });
         albumManager.updatePhotoService();
 
-        imageManager.imagePaths(jpgChangedPath)
-                    .forEach(p -> {
-                        log.info("Found changed image [{}]", p);
-                        PhotoMetaData photoMetaData = new PhotoMetaData(p);
-                        Optional<AlbumManifest> albumManifest = albumManager.addPhoto(photoMetaData);
-                    });
+        Files.newDirectoryStream(jpgChangedPath, "*.jpg")
+             .forEach(p -> {
+                 log.info("Found changed image [{}]", p);
+                 PhotoMetaData photoMetaData = new PhotoMetaData(p);
+                 Optional<AlbumManifest> albumManifest = albumManager.addPhoto(photoMetaData);
+             });
         albumManager.updatePhotoService();
     }
 

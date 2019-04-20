@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -60,6 +61,37 @@ public class AlbumManifest {
         });
     }
 
+    @JsonIgnore
+    public Path getAlbumManifestPath(Path root) {
+        return getAlbumManifestPath(root, getUuid(), getBlItemNumber());
+    }
+
+    @JsonIgnore
+    public Path getAlbumManifestFile(Path root) {
+        return getAlbumManifestFile(root, getUuid(), getBlItemNumber());
+    }
+
+    @JsonIgnore
+    public Path getAlbumManifestPath(Path root, String uuid, String blItemNumber) {
+        return root.resolve(blItemNumber + "-" + uuid);
+    }
+
+    @JsonIgnore
+    public Path getAlbumManifestFile(Path root, String uuid, String blItemNumber) {
+        return getAlbumManifestPath(root, uuid, blItemNumber).resolve(blItemNumber + "-" + uuid + "-manifest.json");
+    }
+
+    @JsonIgnore
+    public List<String> getPhotoIds() {
+        return photos.stream().map(p -> p.getPhotoId()).collect(Collectors.toList());
+    }
+
+    @JsonIgnore
+    public String[] getPhotoIdsArray() {
+        List<String> photoIds = getPhotoIds();
+        return photoIds.toArray(new String[]{});
+    }
+
     public static AlbumManifest fromJson(String json) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
@@ -71,6 +103,14 @@ public class AlbumManifest {
         } catch (IOException e) {
             throw new LegoImagingException(e);
         }
+    }
+
+    public String getTitle() {
+        return Optional.ofNullable(title).orElse(blItemNumber);
+    }
+
+    public String getDescription() {
+        return Optional.ofNullable(description).orElse(blItemNumber + " - Lot Id ["+uuid+"]");
     }
 
     public static AlbumManifest fromJson(Path jsonFile) {

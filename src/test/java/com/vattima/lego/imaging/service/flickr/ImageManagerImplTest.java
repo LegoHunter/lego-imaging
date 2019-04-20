@@ -1,140 +1,89 @@
 package com.vattima.lego.imaging.service.flickr;
 
-import com.vattima.lego.imaging.config.LegoImagingProperties;
 import com.vattima.lego.imaging.model.PhotoMetaData;
-import com.vattima.lego.imaging.service.ImageManager;
+import com.vattima.lego.imaging.util.PathUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.imaging.common.ImageMetadata;
 import org.junit.Test;
-import org.springframework.util.ResourceUtils;
 
 import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.AbstractMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
+import static com.vattima.lego.imaging.service.flickr.ImageManagerImpl.KeywordsSplitter;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 public class ImageManagerImplTest {
-
     @Test
-    public void computeMD5Hash() throws Exception {
-        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:actual-lego-photos-with-keywords/DSC_0504.JPG")
-                                              .toURI());
-        ImageManager imageManager = new ImageManagerImpl("Keywords:");
+    public void getKeywords_withJpgFileThatHasKeywords() throws Exception {
+        Path jpgPath = PathUtils.fromClasspath("jpgs", "jpeg-with-keywords.jpg");
+        ImageManagerImpl imageManager = new ImageManagerImpl();
         PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath);
-        String md5Hash = imageManager.computeMD5Hash(photoMetaData);
-        assertThat(md5Hash).isEqualTo("23BFB61B48D367368A03CBC0028C38EB");
+        Map<String, String> map = imageManager.getKeywords(photoMetaData, "XPKeywords:");
+        assertThat(map).isNotNull();
+        assertThat(map.keySet()).hasSize(4);
+        assertThat(map).containsOnlyKeys("tag1", "tag2", "b", "tag3");
+        assertThat(map).containsEntry("tag1", "a");
+        assertThat(map).containsEntry("tag2", "tag2");
+        assertThat(map).containsEntry("b", "b");
+        assertThat(map).containsEntry("tag3", "123");
     }
 
     @Test
-    public void test_getImagePaths_getsAllPathsInRootFolder() throws Exception {
-        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:jpg-root")
-                                              .toURI());
-        LegoImagingProperties legoImagingProperties = new LegoImagingProperties();
-        legoImagingProperties.setRootImagesFolder(jpgPath.toFile()
-                                                         .getAbsolutePath());
-        ImageManagerImpl imageManager = new ImageManagerImpl(legoImagingProperties.getKeywordsKeyName());
-        DirectoryStream<Path> paths = imageManager.imagePaths(Paths.get(legoImagingProperties.getRootImagesFolder()));
-        AtomicInteger pathCount = new AtomicInteger(0);
-        paths.forEach(p -> {
-            pathCount.incrementAndGet();
-        });
-        assertThat(pathCount.get()).isEqualTo(5);
+    public void getKeywords_withJpgFileThatHasNoKeywords_returnsEmptyMap() throws Exception {
+        Path jpgPath = PathUtils.fromClasspath("jpgs", "jpeg-without-keywords.jpg");
+        ImageManagerImpl imageManager = new ImageManagerImpl();
+        PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath);
+        Map<String, String> map = imageManager.getKeywords(photoMetaData, "XPKeywords:");
+        assertThat(map).isNotNull();
+        assertThat(map.keySet()).hasSize(0);
     }
 
     @Test
-    public void test_getImageMetadataItem() throws Exception {
-        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:jpgs/jpeg-with-keywords.jpg")
-                                              .toURI());
-        LegoImagingProperties legoImagingProperties = new LegoImagingProperties();
-        legoImagingProperties.setRootImagesFolder(jpgPath.toFile()
-                                                         .getAbsolutePath());
-        ImageManagerImpl imageManager = new ImageManagerImpl("Keywords:");
-        ImageMetadata m = imageManager.getImageMetadata.apply(jpgPath.toUri()
-                                                                     .toURL());
-        assertThat(m).isNotNull();
-    }
-
-    @Test
-    public void test_jpgImageMetadataItems() throws Exception {
-        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:jpgs/jpeg-with-keywords.jpg")
-                                              .toURI());
-        LegoImagingProperties legoImagingProperties = new LegoImagingProperties();
-        legoImagingProperties.setRootImagesFolder(jpgPath.toFile()
-                                                         .getAbsolutePath());
-        ImageManagerImpl imageManager = new ImageManagerImpl("Keywords:");
-        ImageMetadata m = imageManager.getImageMetadata.apply(jpgPath.toUri()
-                                                                     .toURL());
-        Stream<ImageMetadata.ImageMetadataItem> items = imageManager.jpgImageMetadataItems.apply(m);
-        assertThat(items).isNotEmpty()
-                         .hasSize(6);
-    }
-
-    @Test
-    public void test_jpgImageMetadataItemsKeywords() throws Exception {
-        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:jpgs/jpeg-with-keywords.jpg")
-                                              .toURI());
-        LegoImagingProperties legoImagingProperties = new LegoImagingProperties();
-        legoImagingProperties.setRootImagesFolder(jpgPath.toFile()
-                                                         .getAbsolutePath());
-        legoImagingProperties.setKeywordsKeyName("XPKeywords:");
-        ImageManagerImpl imageManager = new ImageManagerImpl(legoImagingProperties.getKeywordsKeyName());
-        ImageMetadata m = imageManager.getImageMetadata.apply(jpgPath.toUri()
-                                                                     .toURL());
-        Stream<ImageMetadata.ImageMetadataItem> items = imageManager.jpgImageMetadataItems.apply(m);
-        assertThat(items.filter(imageManager.keywordsFilter)).isNotEmpty()
-                                                             .hasSize(1);
-    }
-
-    @Test
-    public void test_keywordsExtractor() throws Exception {
-        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:jpgs/jpeg-with-keywords.jpg")
-                                              .toURI());
-        LegoImagingProperties legoImagingProperties = new LegoImagingProperties();
-        legoImagingProperties.setRootImagesFolder(jpgPath.toFile()
-                                                         .getAbsolutePath());
-        legoImagingProperties.setKeywordsKeyName("XPKeywords:");
-        ImageManagerImpl imageManager = new ImageManagerImpl(legoImagingProperties.getKeywordsKeyName());
-        ImageMetadata m = imageManager.getImageMetadata.apply(jpgPath.toUri()
-                                                                     .toURL());
-        Stream<ImageMetadata.ImageMetadataItem> items = imageManager.jpgImageMetadataItems.apply(m);
-        Map<String, String> map = items.filter(imageManager.keywordsFilter)
-                                       .flatMap(imageManager.keywordsExtractor)
-                                       .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (k1, k2) -> k1));
-        System.out.println(map);
-    }
-
-    @Test
-    public void test_actualLegoPhotos() throws Exception {
-        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:actual-lego-photos-with-keywords")
-                                              .toURI());
-        LegoImagingProperties legoImagingProperties = new LegoImagingProperties();
-        legoImagingProperties.setRootImagesFolder(jpgPath.toFile()
-                                                         .getAbsolutePath());
-        legoImagingProperties.setKeywordsKeyName("Keywords:");
-        ImageManagerImpl imageManager = new ImageManagerImpl(legoImagingProperties.getKeywordsKeyName());
-        DirectoryStream<Path> paths = imageManager.imagePaths(Paths.get(legoImagingProperties.getRootImagesFolder()));
-        AtomicInteger pathCount = new AtomicInteger(0);
+    public void getKeywords_withJpgFilesThatHaveKeywords_returnANonEmptyMap() throws Exception {
+        Path jpgPath = PathUtils.fromClasspath("actual-lego-photos-with-keywords");
+        ImageManagerImpl imageManager = new ImageManagerImpl();
+        DirectoryStream<Path> paths = Files.newDirectoryStream(jpgPath, "*.jpg");
         paths.forEach(p -> {
             try {
-                pathCount.incrementAndGet();
-                ImageMetadata m = imageManager.getImageMetadata.apply(p.toUri()
-                                                                       .toURL());
-                Stream<ImageMetadata.ImageMetadataItem> items = imageManager.jpgImageMetadataItems.apply(m);
-                Map<String, String> map = items.filter(imageManager.keywordsFilter)
-                                               .flatMap(imageManager.keywordsExtractor)
-                                               .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (k1, k2) -> k1));
+                PhotoMetaData photoMetaData = new PhotoMetaData(p);
+                Map<String, String> map = imageManager.getKeywords(photoMetaData, "Keywords:");
+                assertThat(map).isNotNull();
+                assertThat(map.keySet()).isNotNull();
+                assertThat(map.keySet()
+                              .size()).isGreaterThan(0);
                 log.info("path=[{}], map=[{}]", p, map);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
-        assertThat(pathCount.get()).isEqualTo(21);
     }
 
+    @Test
+    public void keywordsSplitter_of_parsesKeywords() {
+        assertThat(KeywordsSplitter.of("Keywords:", "Keywords: a:1;b:2;c:3")).containsExactly("a:1", "b:2", "c:3");
+        assertThat(KeywordsSplitter.of("Keywords:", "Keywords:a:1;b:2;c:3")).containsExactly("a:1", "b:2", "c:3");
+        assertThat(KeywordsSplitter.of("Keywords: ", "Keywords: a:1;b:2;c:3")).containsExactly("a:1", "b:2", "c:3");
+        assertThat(KeywordsSplitter.of("Keywords: ", "Keywords:a:1;b:2;c:3")).isEmpty();
+        assertThat(KeywordsSplitter.of("foo: ", "Keywords:a:1;b:2;c:3")).isEmpty();
+
+        assertThat(KeywordsSplitter.of("Keywords:", "Keywords: a:1,b:2,c:3")).containsExactly("a:1", "b:2", "c:3");
+        assertThat(KeywordsSplitter.of("Keywords:", "Keywords: a:1 b:2 c:3")).containsExactly("a:1", "b:2", "c:3");
+        assertThat(KeywordsSplitter.of("Keywords:", "Keywords: a:1;b:2,c:3")).containsExactly("a:1", "b:2", "c:3");
+        assertThat(KeywordsSplitter.of("Keywords:", "Keywords: a:1;b:2,c:3 d:4")).containsExactly("a:1", "b:2", "c:3", "d:4");
+        assertThat(KeywordsSplitter.of("Keywords:", "Keywords: a;b:2,c d:4")).containsExactly("a", "b:2", "c", "d:4");
+        assertThat(KeywordsSplitter.of("Keywords:", "Keywords: a;b:2,c d=4")).containsExactly("a", "b:2", "c", "d=4");
+    }
+
+    @Test
+    public void keywordsSplitter_tokenizer_returnsMapEntry() {
+        assertThat(KeywordsSplitter.tokenizer.apply("a:1")).isEqualTo(new AbstractMap.SimpleEntry<>("a", "1"));
+        assertThat(KeywordsSplitter.tokenizer.apply("a=1")).isEqualTo(new AbstractMap.SimpleEntry<>("a", "1"));
+        assertThat(KeywordsSplitter.tokenizer.apply("a,1")).isEqualTo(new AbstractMap.SimpleEntry<>("a,1", "a,1"));
+        assertThat(KeywordsSplitter.tokenizer.apply("a")).isEqualTo(new AbstractMap.SimpleEntry<>("a", "a"));
+        assertThat(KeywordsSplitter.tokenizer.apply("a=1=2")).isEqualTo(new AbstractMap.SimpleEntry<>("a", "1=2"));
+        assertThat(KeywordsSplitter.tokenizer.apply("a=1:2")).isEqualTo(new AbstractMap.SimpleEntry<>("a", "1:2"));
+    }
 }

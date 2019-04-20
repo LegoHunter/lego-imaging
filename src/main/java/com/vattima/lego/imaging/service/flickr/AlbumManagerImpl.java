@@ -2,21 +2,19 @@ package com.vattima.lego.imaging.service.flickr;
 
 import com.vattima.lego.imaging.LegoImagingException;
 import com.vattima.lego.imaging.config.LegoImagingProperties;
-import com.vattima.lego.imaging.file.ImageCollector;
-import com.vattima.lego.imaging.flickr.configuration.FlickrProperties;
 import com.vattima.lego.imaging.model.AlbumManifest;
-import com.vattima.lego.imaging.model.ImageFileHolder;
 import com.vattima.lego.imaging.model.PhotoMetaData;
 import com.vattima.lego.imaging.service.AlbumManager;
 import com.vattima.lego.imaging.service.ImageManager;
 import com.vattima.lego.imaging.service.PhotoServiceUploadManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.bricklink.data.lego.dao.BricklinkInventoryDao;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,7 +44,7 @@ public class AlbumManagerImpl implements AlbumManager {
         AlbumManifest albumManifest;
 
         // Extract the keywords from the PhotoMetaData
-        imageManager.getKeywords(photoMetaData);
+        imageManager.getKeywords(photoMetaData, legoImagingProperties.getKeywordsKeyName());
 
         // get uuid and blItemNumber
         String uuid = photoMetaData.getKeyword("uuid");
@@ -95,7 +93,7 @@ public class AlbumManagerImpl implements AlbumManager {
         }
 
         // compute MD5 hash of the photo
-        String md5Hash = imageManager.computeMD5Hash(photoMetaData);
+        String md5Hash = photoMetaData.getMd5();
 
         // get Photo by filename from AlbumManifest
         Optional<PhotoMetaData> photoMetaDataInAlbum = albumManifest.getPhotoByFilename(photoMetaData.getFilename());
@@ -171,30 +169,11 @@ public class AlbumManagerImpl implements AlbumManager {
 
     @Override
     public Optional<AlbumManifest> movePhoto(PhotoMetaData photoMetaData) {
-        Optional<AlbumManifest> albumManifest = Optional.empty();
-        if (!photoMetaData.canMove()) {
-            log.warn("Cannot move image file [{}] - missing required keywords", photoMetaData.getPath());
-        } else {
-            try {
-                albumManifest = Optional.ofNullable(albums.get(photoMetaData.getKeyword("uuid")));
-                Path targetPath = getAlbumManifestPath(albumManifest.get());
-                if (!Files.exists(targetPath, LinkOption.NOFOLLOW_LINKS)) {
-                    Files.createDirectory(targetPath);
-                    log.info("Created directory path [{}]", targetPath);
-                }
-                Path targetFile = targetPath.resolve(photoMetaData.getFilename());
-                if (Files.exists(targetFile, LinkOption.NOFOLLOW_LINKS)) {
-                    Files.delete(targetFile);
-                    log.info("Deleted existing image [{}]", targetFile);
-                }
-                Files.copy(photoMetaData.getAbsolutePath(), targetFile, StandardCopyOption.REPLACE_EXISTING);
-                log.info("Copied image from [{}] to [{}]", photoMetaData.getAbsolutePath(), targetFile);
-                Files.delete(photoMetaData.getAbsolutePath());
-                log.info("Deleted old image [{}]", photoMetaData.getAbsolutePath());
-            } catch (IOException e) {
-                throw new LegoImagingException(e);
-            }
-        }
+        Optional<AlbumManifest> albumManifest = Optional.ofNullable(albums.get(photoMetaData.getKeyword("uuid")));
+        albumManifest.ifPresent(a -> {
+            Path targetPath = getAlbumManifestPath(a);
+            photoMetaData.move(targetPath);
+        });
         return albumManifest;
     }
 
