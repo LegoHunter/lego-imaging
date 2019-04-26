@@ -11,7 +11,6 @@ import org.apache.commons.imaging.common.ImageMetadata;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -65,22 +64,7 @@ public class ImageFileHolder {
     }
 
     public void updateInventoryFromKeywords() {
-        BricklinkInventory bricklinkInventory = buildBricklinkInventoryFromKeywords(getKeywords());
+        BricklinkInventory bricklinkInventory = BricklinkInventory.fromKeywords(getKeywords());
         bricklinkInventoryDao.updateFromImageKeywords(bricklinkInventory);
-    }
-
-    public BricklinkInventory buildBricklinkInventoryFromKeywords(final Map<String, String> keywords) {
-        BricklinkInventory bricklinkInventory = new BricklinkInventory();
-        Optional.ofNullable(keywords.get("uuid"))
-                .ifPresent(bricklinkInventory::setUuid);
-        Optional.ofNullable(keywords.get("bl"))
-                .ifPresent(bricklinkInventory::setBlItemNo);
-        Optional.ofNullable(keywords.get("sealed"))
-                .ifPresent(v -> bricklinkInventory.setSealed(Boolean.valueOf(v)));
-        Optional.ofNullable(keywords.get("bc"))
-                .ifPresent(bricklinkInventory::setBoxConditionCode);
-        Optional.ofNullable(keywords.get("ic"))
-                .ifPresent(bricklinkInventory::setInstructionsConditionCode);
-        return bricklinkInventory;
     }
 }

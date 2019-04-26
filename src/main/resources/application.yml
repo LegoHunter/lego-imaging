@@ -4,12 +4,23 @@ spring:
    application:
       name: Lego Imaging Application
    datasource:
-      url: jdbc:mysql://shared50.accountservergroup.com:3306/a925261_dev_lego
+      url: jdbc:mysql://shared50.accountservergroup.com:3306/a925261_dev_lego?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
       username: a925261_legomgr
-      password: N1njago1
-      #driver-class-name: com.mysql.jdbc.Driver
+      password: g!oQf2W%TE2d!80xbo3i
+      client-config-dir: C:\Users\tvatt\.credentials\site5\database
+      client-config-file: site5-database-configuration.json
+      database-key-name: site5-lego-dev
       hikari:
-         connection-timeout: 60000
+         connection-timeout: 123456
+         idle-timeout: 98765
+         connection-test-query: SELECT 1
+         initialization-fail-timeout: 99999
+         auto-commit: false
+         login-timeout: 87654
+         minimum-idle: 5
+         maximum-pool-size: 25
+         validation-timeout: 10000
+         pool-name: site5-mysql-jdbc-pool
 
 logging:
    level:
@@ -20,7 +31,7 @@ logging:
       org.mybatis: WARN
       com.gargoylesoftware: ERROR
       com.gargoylesoftware.htmlunit.javascript.StrictErrorReporter: OFF
-      com.zaxxer: WARN
+      com.zaxxer: DEBUG
       feign: DEBUG
 
 bricklink:

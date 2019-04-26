@@ -1,9 +1,8 @@
 package com.vattima.lego.imaging.service;
 
-import com.flickr4java.flickr.FlickrException;
+import com.flickr4java.flickr.Transport;
 import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import com.flickr4java.flickr.uploader.IUploader;
-import com.flickr4java.flickr.uploader.UploadMetaData;
 import com.vattima.lego.imaging.TestApplication;
 import com.vattima.lego.imaging.config.LegoImagingProperties;
 import com.vattima.lego.imaging.flickr.configuration.FlickrConfiguration;
@@ -12,8 +11,12 @@ import com.vattima.lego.imaging.model.AlbumManifest;
 import com.vattima.lego.imaging.model.PhotoMetaData;
 import com.vattima.lego.imaging.service.flickr.AlbumManagerImpl;
 import com.vattima.lego.imaging.service.flickr.ImageManagerImpl;
+import com.vattima.lego.imaging.test.MockFlickerIUploader;
+import com.vattima.lego.imaging.test.MockFlickerPhotosetsInterface;
 import com.vattima.lego.imaging.test.UnitTestUtils;
 import lombok.extern.slf4j.Slf4j;
+import net.bricklink.data.lego.dao.BricklinkInventoryDao;
+import net.bricklink.data.lego.ibatis.configuration.IbatisConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,18 +30,15 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ResourceUtils;
 
-import java.io.File;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
-import java.util.Random;
 
 @RunWith(SpringRunner.class)
 @Slf4j
 @TestPropertySource(locations = "classpath:application.yml")
-@ContextConfiguration(classes = {TestApplication.class, FlickrConfiguration.class}, initializers = ConfigFileApplicationContextInitializer.class)
+@ContextConfiguration(classes = {TestApplication.class, BricklinkInventoryDao.class, FlickrConfiguration.class, IbatisConfiguration.class, PhotoServiceUploadManagerImplTest.TestConfig.class}, initializers = ConfigFileApplicationContextInitializer.class)
 public class PhotoServiceUploadManagerImplTest {
 
     @Autowired
@@ -49,6 +49,9 @@ public class PhotoServiceUploadManagerImplTest {
 
     @Autowired
     PhotosetsInterface photosetsInterface;
+
+    @Autowired
+    BricklinkInventoryDao bricklinkInventoryDao;
 
     private LegoImagingProperties legoImagingProperties;
     private ImageManager imageManager;
@@ -65,7 +68,7 @@ public class PhotoServiceUploadManagerImplTest {
     public void queue() throws Exception {
         log.info("FlickrProperties [{}]", flickrProperties);
         PhotoServiceUploadManager photoServiceUploadManager = new PhotoServiceUploadManagerImpl(photosetsInterface, uploader, legoImagingProperties);
-        albumManager = new AlbumManagerImpl(imageManager, legoImagingProperties, photoServiceUploadManager);
+        albumManager = new AlbumManagerImpl(imageManager, legoImagingProperties, photoServiceUploadManager,bricklinkInventoryDao);
 
         Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:lego-photos-upload-test")
                                               .toURI());
@@ -103,45 +106,13 @@ public class PhotoServiceUploadManagerImplTest {
         @Primary
         @Bean
         public IUploader uploader() {
+            return new MockFlickerIUploader();
 
-            return new IUploader() {
-                Random r = new Random();
-
-                private String getRandom() {
-                    return String.valueOf(r.nextInt(100000000 - 10000000) + 10000000);
-                }
-
-                @Override
-                public String upload(byte[] bytes, UploadMetaData uploadMetaData) throws FlickrException {
-                    return getRandom();
-                }
-
-                @Override
-                public String upload(File file, UploadMetaData uploadMetaData) throws FlickrException {
-                    return getRandom();
-                }
-
-                @Override
-                public String upload(InputStream inputStream, UploadMetaData uploadMetaData) throws FlickrException {
-                    return getRandom();
-                }
-
-                @Override
-                public String replace(InputStream inputStream, String s, boolean b) throws FlickrException {
-                    return getRandom();
-                }
-
-                @Override
-                public String replace(byte[] bytes, String s, boolean b) throws FlickrException {
-                    return getRandom();
-                }
-
-                @Override
-                public String replace(File file, String s, boolean b) throws FlickrException {
-                    return getRandom();
-                }
-            };
+        }
+        @Primary
+        @Bean
+        public PhotosetsInterface photosetsInterface(FlickrProperties.Secrets flickrSecrets, Transport flickrTransport) {
+            return new MockFlickerPhotosetsInterface(flickrSecrets.getKey(), flickrSecrets.getSecret(), flickrTransport);
         }
     }
-
 }

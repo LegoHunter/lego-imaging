@@ -10,6 +10,7 @@ import com.vattima.lego.imaging.LegoImagingException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import net.bricklink.data.lego.dto.BricklinkInventory;
 
 import java.io.IOException;
 import java.net.URL;
@@ -72,13 +73,23 @@ public class AlbumManifest {
     }
 
     @JsonIgnore
-    public Path getAlbumManifestPath(Path root, String uuid, String blItemNumber) {
+    public static Path getAlbumManifestPath(Path root, String uuid, String blItemNumber) {
         return root.resolve(blItemNumber + "-" + uuid);
     }
 
     @JsonIgnore
-    public Path getAlbumManifestFile(Path root, String uuid, String blItemNumber) {
+    public static Path getAlbumManifestFile(Path root, String uuid, String blItemNumber) {
         return getAlbumManifestPath(root, uuid, blItemNumber).resolve(blItemNumber + "-" + uuid + "-manifest.json");
+    }
+
+    @JsonIgnore
+    public static Path getAlbumManifestPath(Path root, PhotoMetaData photoMetaData) {
+        return getAlbumManifestPath(root, photoMetaData.getKeyword("uuid"), photoMetaData.getKeyword("bl"));
+    }
+
+    @JsonIgnore
+    public static Path getAlbumManifestFile(Path root, PhotoMetaData photoMetaData) {
+        return getAlbumManifestFile(root, photoMetaData.getKeyword("uuid"), photoMetaData.getKeyword("bl"));
     }
 
     @JsonIgnore
@@ -106,11 +117,18 @@ public class AlbumManifest {
     }
 
     public String getTitle() {
-        return Optional.ofNullable(title).orElse(blItemNumber);
+        return Optional.ofNullable(title)
+                       .orElse(Optional.ofNullable(getBlItemNumber())
+                                       .orElseThrow(() -> new LegoImagingException("No bricklink item number set")));
     }
 
     public String getDescription() {
-        return Optional.ofNullable(description).orElse(blItemNumber + " - Lot Id ["+uuid+"]");
+        return Optional.ofNullable(description)
+                       .orElseGet(() -> String.format("%s - Lot Id [%s]",
+                               Optional.ofNullable(getBlItemNumber())
+                                       .orElseThrow(() -> new LegoImagingException("No bricklink item number set")),
+                               Optional.ofNullable(getUuid())
+                                       .orElseThrow(() -> new LegoImagingException("No uuid set"))));
     }
 
     public static AlbumManifest fromJson(Path jsonFile) {
@@ -152,5 +170,10 @@ public class AlbumManifest {
     @Override
     public int hashCode() {
         return Objects.hash(getUuid());
+    }
+
+    public void updateFromBricklinkInventory(BricklinkInventory bricklinkInventory) {
+        setTitle(String.format("%s - %s", bricklinkInventory.getBlItemNo(), bricklinkInventory.getItemName()));
+        setDescription("");
     }
 }

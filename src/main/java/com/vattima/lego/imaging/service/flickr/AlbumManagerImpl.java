@@ -1,6 +1,5 @@
 package com.vattima.lego.imaging.service.flickr;
 
-import com.vattima.lego.imaging.LegoImagingException;
 import com.vattima.lego.imaging.config.LegoImagingProperties;
 import com.vattima.lego.imaging.model.AlbumManifest;
 import com.vattima.lego.imaging.model.PhotoMetaData;
@@ -9,9 +8,10 @@ import com.vattima.lego.imaging.service.ImageManager;
 import com.vattima.lego.imaging.service.PhotoServiceUploadManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.bricklink.data.lego.dao.BricklinkInventoryDao;
+import net.bricklink.data.lego.dto.BricklinkInventory;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,6 +26,7 @@ public class AlbumManagerImpl implements AlbumManager {
     private final ImageManager imageManager;
     private final LegoImagingProperties legoImagingProperties;
     private final PhotoServiceUploadManager photoServiceUploadManager;
+    private final BricklinkInventoryDao bricklinkInventoryDao;
 
     private Map<String, AlbumManifest> albums = new ConcurrentHashMap<>();
 
@@ -36,7 +37,7 @@ public class AlbumManagerImpl implements AlbumManager {
 
     @Override
     public void writeAlbumManifest(AlbumManifest albumManifest) {
-        AlbumManifest.toJson(getAlbumManifestFile(albumManifest), albumManifest);
+        AlbumManifest.toJson(albumManifest.getAlbumManifestFile(legoImagingProperties.getRootImagesPath()), albumManifest);
     }
 
     @Override
@@ -58,22 +59,14 @@ public class AlbumManagerImpl implements AlbumManager {
             return Optional.empty();
         }
 
-        // get target path for photo
-        Path targetPath = getAlbumManifestPath(photoMetaData);
-        try {
-            Files.createDirectories(targetPath);
-        } catch (IOException e) {
-            throw new LegoImagingException(e);
-        }
-
-        // Get Path to AlbumManifest file
-        Path albumManifestPath = getAlbumManifestFile(photoMetaData);
-
         // if uuid is a key in the map, get AlbumManifest out of the Map.
         if (albums.containsKey(uuid)) {
             albumManifest = albums.get(uuid);
             log.info("Found AlbumManifest in cache [{}]", albumManifest);
         } else {
+            // Get Path to AlbumManifest file
+            Path albumManifestPath = AlbumManifest.getAlbumManifestFile(legoImagingProperties.getRootImagesPath(), photoMetaData);
+
             // check for existence of AlbumManifest json file
             if (Files.exists(albumManifestPath)) {
                 // If it exists, read it into an AlbumManifest
@@ -132,34 +125,16 @@ public class AlbumManagerImpl implements AlbumManager {
             log.info("New Photo - upload necessary [{}]", photoMetaData);
         }
 
+        // Update the database with information garnered from the photo keywords.
+        BricklinkInventory bricklinkInventory = BricklinkInventory.fromKeywords(photoMetaData.getKeywords());
+        bricklinkInventoryDao.updateFromImageKeywords(bricklinkInventory);
+        bricklinkInventory = bricklinkInventoryDao.getByUuid(albumManifest.getUuid());
+        albumManifest.updateFromBricklinkInventory(bricklinkInventory);
+
         // save AlbumManifest
         writeAlbumManifest(albumManifest);
 
         return Optional.of(albumManifest);
-    }
-
-    public Path getAlbumManifestPath(PhotoMetaData photoMetaData) {
-        return getAlbumManifestPath(photoMetaData.getKeyword("uuid"), photoMetaData.getKeyword("bl"));
-    }
-
-    public Path getAlbumManifestFile(PhotoMetaData photoMetaData) {
-        return getAlbumManifestFile(photoMetaData.getKeyword("uuid"), photoMetaData.getKeyword("bl"));
-    }
-
-    public Path getAlbumManifestPath(AlbumManifest albumManifest) {
-        return getAlbumManifestPath(albumManifest.getUuid(), albumManifest.getBlItemNumber());
-    }
-
-    public Path getAlbumManifestFile(AlbumManifest albumManifest) {
-        return getAlbumManifestFile(albumManifest.getUuid(), albumManifest.getBlItemNumber());
-    }
-
-    public Path getAlbumManifestPath(String uuid, String blItemNumber) {
-        return Paths.get(legoImagingProperties.getRootImagesFolder() + "/" + blItemNumber + "-" + uuid);
-    }
-
-    public Path getAlbumManifestFile(String uuid, String blItemNumber) {
-        return Paths.get(getAlbumManifestPath(uuid, blItemNumber) + "/" + blItemNumber + "-" + uuid + "-manifest.json");
     }
 
     @Override
@@ -171,7 +146,7 @@ public class AlbumManagerImpl implements AlbumManager {
     public Optional<AlbumManifest> movePhoto(PhotoMetaData photoMetaData) {
         Optional<AlbumManifest> albumManifest = Optional.ofNullable(albums.get(photoMetaData.getKeyword("uuid")));
         albumManifest.ifPresent(a -> {
-            Path targetPath = getAlbumManifestPath(a);
+            Path targetPath = a.getAlbumManifestPath(Paths.get(legoImagingProperties.getRootImagesFolder()));
             photoMetaData.move(targetPath);
         });
         return albumManifest;

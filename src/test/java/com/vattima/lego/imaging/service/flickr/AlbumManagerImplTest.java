@@ -8,7 +8,9 @@ import com.vattima.lego.imaging.service.AlbumManager;
 import com.vattima.lego.imaging.service.ImageManager;
 import com.vattima.lego.imaging.service.PhotoServiceUploadManager;
 import com.vattima.lego.imaging.test.UnitTestUtils;
+import com.vattima.lego.imaging.util.PathUtils;
 import net.bricklink.data.lego.dao.BricklinkInventoryDao;
+import net.bricklink.data.lego.dto.BricklinkInventory;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.util.ResourceUtils;
@@ -20,7 +22,8 @@ import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
-import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 public class AlbumManagerImplTest {
     private LegoImagingProperties legoImagingProperties;
@@ -38,16 +41,15 @@ public class AlbumManagerImplTest {
         bricklinkInventoryDao = mock(BricklinkInventoryDao.class);
         photoServiceUploadManager = mock(PhotoServiceUploadManager.class);
         imageManager = new ImageManagerImpl();
-        albumManager = new AlbumManagerImpl(imageManager, legoImagingProperties, photoServiceUploadManager);
+        albumManager = new AlbumManagerImpl(imageManager, legoImagingProperties, photoServiceUploadManager, bricklinkInventoryDao);
     }
 
     @Test
     public void addPhoto() throws Exception {
-        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:album-manager-test/add-photo-test")
-                                              .toURI());
+        Path jpgPath = PathUtils.fromClasspath("album-manager-test/add-photo-test");
         legoImagingProperties.setRootImagesFolder(jpgPath.toFile()
                                                          .getAbsolutePath());
-        bricklinkInventoryDao = mock(BricklinkInventoryDao.class);
+        when(bricklinkInventoryDao.getByUuid(any(String.class))).thenReturn(new BricklinkInventory());
 
         UnitTestUtils.deleteSubDirectoriesInPath(jpgPath);
 
@@ -69,7 +71,7 @@ public class AlbumManagerImplTest {
 
         UnitTestUtils.deleteSubDirectoriesInPath(jpgPath);
 
-        AlbumManager albumManager = new AlbumManagerImpl(imageManager, legoImagingProperties, photoServiceUploadManager);
+        AlbumManager albumManager = new AlbumManagerImpl(imageManager, legoImagingProperties, photoServiceUploadManager, bricklinkInventoryDao);
         PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0504-missing-uuid.jpg"));
         Optional<AlbumManifest> albumManifest = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest).isEmpty();
@@ -77,11 +79,11 @@ public class AlbumManagerImplTest {
 
     @Test
     public void addPhoto_inSameAlbum_returnsCachedAlbumManifest() throws Exception {
-        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:actual-lego-photos-with-keywords-cache-test")
-                                              .toURI());
-        legoImagingProperties.setRootImagesFolder(jpgPath.toFile()
-                                                         .getAbsolutePath());
+        Path jpgPath = PathUtils.fromClasspath("actual-lego-photos-with-keywords-cache-test");
+        legoImagingProperties.setRootImagesFolder(jpgPath.toFile().getAbsolutePath());
         UnitTestUtils.deleteSubDirectoriesInPath(jpgPath);
+
+        when(bricklinkInventoryDao.getByUuid(any(String.class))).thenReturn(new BricklinkInventory());
 
         Optional<AlbumManifest> emptyAlbumManifest = albumManager.getAlbumManifest("bogus");
         assertThat(emptyAlbumManifest).isEmpty();
@@ -109,18 +111,19 @@ public class AlbumManagerImplTest {
 
         assertThat(albumManifest4.get()).isNotIn(albumManifest1, albumManifest2);
         assertThat(albumManifest4.get()).isSameAs(albumManifest3.get());
+        verify(bricklinkInventoryDao, times(4)).updateFromImageKeywords(any(BricklinkInventory.class));
     }
 
     @Test
     public void addPhoto_hasChangedPhotos_updatesAlbumManifest_andReplacesPhotos() throws Exception {
-        Path rootTestImagePath = Paths.get(ResourceUtils.getURL("classpath:actual-lego-photos-with-keywords-changed-md5-test")
-                                                        .toURI());
+        Path rootTestImagePath = PathUtils.fromClasspath("actual-lego-photos-with-keywords-changed-md5-test");
         Path existingPath = rootTestImagePath.resolve(Paths.get("existing"));
         Path changedPath = rootTestImagePath.resolve(Paths.get("changed"));
 
         UnitTestUtils.deleteSubDirectoriesInPath(existingPath);
         legoImagingProperties.setRootImagesFolder(existingPath.toFile()
                                                               .getAbsolutePath());
+        when(bricklinkInventoryDao.getByUuid(any(String.class))).thenReturn(new BricklinkInventory());
 
         Set<AlbumManifest> albumManifests = new HashSet<>();
         Files.walk(Paths.get(legoImagingProperties.getRootImagesFolder()))

@@ -16,6 +16,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StopWatch;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -94,22 +96,27 @@ public class PhotoServiceUploadManagerImpl implements PhotoServiceUploadManager 
                  }
              });
             // Create the Album if it doesn't exist
+            PhotoMetaData primaryPhoto = a.getPrimaryPhoto();
+            String primaryPhotoId = primaryPhoto.getPhotoId();
             String photosetId = Optional.ofNullable(a.getPhotosetId())
                     .orElseGet(() -> {
                         try {
-                            PhotoMetaData primaryPhoto = a.getPrimaryPhoto();
-                            String primaryPhotoId = primaryPhoto.getPhotoId();
                             Photoset photoset = photosetsInterface.create(a.getTitle(), a.getDescription(), primaryPhotoId);
-                            log.info("Created Photoset [{}] with primary photo id [{}] - filename [{}]", photoset, primaryPhoto.getFilename(), primaryPhotoId);
+                            log.info("Created Photoset [{}] with primary photo id [{}] - filename [{}]", photoset, primaryPhotoId, primaryPhoto.getFilename());
                             a.setPhotosetId(photoset.getId());
-                            photosetsInterface.editPhotos(a.getPhotosetId(), primaryPhotoId, a.getPhotoIdsArray());
-                            log.info("Updated Photoset [{}] with primary photo id [{}] - added photos {}", photoset, primaryPhoto.getFilename(), a.getPhotoIdsArray());
-                            AlbumManifest.toJson(a.getAlbumManifestFile(root), a);
+                            a.setUrl(new URL(photoset.getUrl()));
                             return a.getPhotosetId();
-                        } catch (FlickrException e) {
+                        } catch (MalformedURLException | FlickrException e) {
                             throw new LegoImagingException(e);
                         }
                     });
+            try {
+                photosetsInterface.editPhotos(a.getPhotosetId(), primaryPhotoId, a.getPhotoIdsArray());
+                log.info("Updated PhotosetId [{}] with primary photo id [{}] - added photos {}", photosetId, primaryPhoto.getPhotoId(), a.getPhotoIdsArray());
+            } catch (FlickrException e) {
+                throw new LegoImagingException(e);
+            }
+            AlbumManifest.toJson(a.getAlbumManifestFile(root), a);
         });
         albumManifests.clear();
     }

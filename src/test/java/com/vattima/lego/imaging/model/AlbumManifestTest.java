@@ -97,8 +97,8 @@ public class AlbumManifestTest {
     public void fromJson_withNonExistentFile_returnsNewEmptyAlbumManifest() {
         AlbumManifest albumManifest = AlbumManifest.fromJson(Paths.get("bogus-xxxxxxx"));
 
-        assertThat(albumManifest.getTitle()).isBlank();
-        assertThat(albumManifest.getDescription()).isBlank();
+        assertThatThrownBy(albumManifest::getTitle).isInstanceOf(LegoImagingException.class).hasMessageContaining("No");
+        assertThatThrownBy(albumManifest::getDescription).isInstanceOf(LegoImagingException.class).hasMessageContaining("No");
         assertThat(albumManifest.getPhotosetId()).isBlank();
         assertThat(albumManifest.isNew()).isTrue();
         assertThat(albumManifest.getPhotos()).hasSize(0);

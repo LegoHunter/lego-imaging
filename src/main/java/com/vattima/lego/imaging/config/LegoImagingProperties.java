@@ -5,12 +5,18 @@ import lombok.Setter;
 import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 @Setter
 @Getter
 @ToString
 @ConfigurationProperties(prefix = "lego.imaging")
 public class LegoImagingProperties {
     private String rootImagesFolder;
-    private String rootInventoryItemsFolder;
     private String keywordsKeyName;
+
+    public Path getRootImagesPath() {
+        return Paths.get(rootImagesFolder);
+    }
 }
