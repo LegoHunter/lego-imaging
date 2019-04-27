@@ -28,7 +28,7 @@ public class PhotoMetaData {
     @JsonCreator
     public PhotoMetaData(@JsonProperty("path") Path path, @JsonProperty("filename") Path filename) {
         this.path = path;
-        this.filename = this.path.resolve(filename);
+        this.filename = filename;
     }
 
     public PhotoMetaData(Path path) {
@@ -117,7 +117,7 @@ public class PhotoMetaData {
                     Files.createDirectory(targetDirectory);
                     log.info("Created directory path [{}]", targetDirectory);
                 }
-                Path targetFile = targetDirectory.resolve(getFilename());
+                Path targetFile = targetDirectory.resolve(getFilenameString());
                 if (Files.exists(targetFile, LinkOption.NOFOLLOW_LINKS)) {
                     Files.delete(targetFile);
                     log.info("Deleted existing image [{}]", targetFile);

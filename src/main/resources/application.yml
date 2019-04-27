@@ -11,12 +11,12 @@ spring:
       client-config-file: site5-database-configuration.json
       database-key-name: site5-lego-dev
       hikari:
-         connection-timeout: 123456
-         idle-timeout: 98765
+         connection-timeout: 10000
+         idle-timeout: 30000
          connection-test-query: SELECT 1
-         initialization-fail-timeout: 99999
+         initialization-fail-timeout: 10000
          auto-commit: false
-         login-timeout: 87654
+         login-timeout: 10000
          minimum-idle: 5
          maximum-pool-size: 25
          validation-timeout: 10000
@@ -35,12 +35,8 @@ logging:
       feign: DEBUG
 
 bricklink:
-   consumer:
-      key: 9A62098F9A314327B0B8A28FFEF6A0EB
-      secret: 72370639EE9D468CA3E8777E005BB320
-   token:
-      value: 07603FB14C474E2993BBF5AE4199C323
-      secret: 6ED6C6275151480DA3541708FE5A5D59
+   client-config-dir: C:\Users\tvatt\.credentials\bricklink
+   client-config-file: bricklink-client-api-keys.json
 
 lego:
    sheet:

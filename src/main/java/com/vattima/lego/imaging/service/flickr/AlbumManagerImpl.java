@@ -117,6 +117,7 @@ public class AlbumManagerImpl implements AlbumManager {
             }
         } else {
             // Add photo to manifest and upload it.
+            photoMetaData.setChanged(true);
             albumManifest.getPhotos()
                          .add(photoMetaData);
             movePhoto(photoMetaData);
