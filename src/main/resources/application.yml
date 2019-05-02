@@ -24,7 +24,7 @@ spring:
 
 logging:
    level:
-      root: DEBUG
+      root: INFO
       com.vattima.lego.data.ibatis.mapper: WARN
       net.bricklink.data: WARN
       org.springframework.jdbc: WARN
@@ -33,6 +33,7 @@ logging:
       com.gargoylesoftware.htmlunit.javascript.StrictErrorReporter: OFF
       com.zaxxer: DEBUG
       feign: DEBUG
+      sun: WARN
 
 bricklink:
    client-config-dir: C:\Users\tvatt\.credentials\bricklink

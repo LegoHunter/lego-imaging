@@ -1,5 +1,6 @@
 package com.vattima.lego.imaging.service.flickr;
 
+import com.vattima.lego.imaging.LegoImagingException;
 import com.vattima.lego.imaging.config.LegoImagingProperties;
 import com.vattima.lego.imaging.model.AlbumManifest;
 import com.vattima.lego.imaging.model.PhotoMetaData;
@@ -11,13 +12,16 @@ import lombok.extern.slf4j.Slf4j;
 import net.bricklink.data.lego.dao.BricklinkInventoryDao;
 import net.bricklink.data.lego.dto.BricklinkInventory;
 import org.springframework.stereotype.Component;
+import static java.util.stream.Stream.Builder;
+import static java.nio.file.FileVisitResult.*;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.IOException;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -29,6 +33,16 @@ public class AlbumManagerImpl implements AlbumManager {
     private final BricklinkInventoryDao bricklinkInventoryDao;
 
     private Map<String, AlbumManifest> albums = new ConcurrentHashMap<>();
+
+    public Stream<AlbumManifest> findManifests(Path path) {
+        try {
+            Builder<AlbumManifest> builder = Stream.builder();
+            Files.walkFileTree(path, new AlbumManifestFileVisitor(builder));
+            return builder.build();
+        } catch (IOException e) {
+            throw new LegoImagingException(e);
+        }
+    }
 
     @Override
     public AlbumManifest readAlbumManifest(Path path) {
@@ -156,5 +170,19 @@ public class AlbumManagerImpl implements AlbumManager {
     @Override
     public Optional<AlbumManifest> getAlbumManifest(String uuid) {
         return Optional.ofNullable(albums.get(uuid));
+    }
+
+    @RequiredArgsConstructor
+    private static class AlbumManifestFileVisitor extends SimpleFileVisitor<Path> {
+        private final PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:*-manifest.json");
+        private final Builder<AlbumManifest> builder;
+
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            if (matcher.matches(file.getFileName())) {
+                builder.add(AlbumManifest.fromJson(file));
+            }
+            return CONTINUE;
+        }
     }
 }

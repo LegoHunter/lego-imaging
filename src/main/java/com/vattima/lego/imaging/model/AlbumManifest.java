@@ -118,7 +118,7 @@ public class AlbumManifest {
 
     public String getTitle() {
         return Optional.ofNullable(title)
-                       .orElse(Optional.ofNullable(getBlItemNumber())
+                       .orElseGet(() -> Optional.ofNullable(getBlItemNumber())
                                        .orElseThrow(() -> new LegoImagingException("No bricklink item number set")));
     }
 
@@ -174,6 +174,6 @@ public class AlbumManifest {
 
     public void updateFromBricklinkInventory(BricklinkInventory bricklinkInventory) {
         setTitle(String.format("%s - %s", bricklinkInventory.getBlItemNo(), bricklinkInventory.getItemName()));
-        setDescription("");
+        setDescription(bricklinkInventory.getUuid());
     }
 }

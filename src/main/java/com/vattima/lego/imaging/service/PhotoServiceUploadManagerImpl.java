@@ -59,6 +59,7 @@ public class PhotoServiceUploadManagerImpl implements PhotoServiceUploadManager 
                              String response = uploader.replace(Files.readAllBytes(pmd.getAbsolutePath()), pmd.getPhotoId(), false);
                              timer.stop();
                              pmd.setPhotoId(response);
+                             pmd.setChanged(false);
                              log.info("Uploaded changed photo [{}] in [{}] ms", pmd, timer.getTotalTimeMillis());
                          } else {
                              log.info("Photo not changed [{}]", pmd);
@@ -88,6 +89,7 @@ public class PhotoServiceUploadManagerImpl implements PhotoServiceUploadManager 
                          pmd.setUploadReturnCode(0);
                          pmd.setUploadedTimeStamp(LocalDateTime.now());
                          pmd.setPhotoId(response);
+                         pmd.setChanged(false);
                          log.info("Uploaded new [{}] in [{}] ms", pmd, timer.getTotalTimeMillis());
                      }
                  } catch (FlickrException | IOException e) {

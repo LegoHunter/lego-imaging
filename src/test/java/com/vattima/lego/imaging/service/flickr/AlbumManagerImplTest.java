@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -42,6 +43,13 @@ public class AlbumManagerImplTest {
         photoServiceUploadManager = mock(PhotoServiceUploadManager.class);
         imageManager = new ImageManagerImpl();
         albumManager = new AlbumManagerImpl(imageManager, legoImagingProperties, photoServiceUploadManager, bricklinkInventoryDao);
+    }
+
+    @Test
+    public void findManifests_returnsNonEmptyStream() throws Exception {
+        Path path = PathUtils.fromClasspath("album-manager-test/find-manifests-test");
+        Stream<AlbumManifest> albumManifests = albumManager.findManifests(path);
+        assertThat(albumManifests).isNotEmpty().hasSize(6);
     }
 
     @Test

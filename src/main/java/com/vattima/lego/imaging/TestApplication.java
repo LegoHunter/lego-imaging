@@ -18,7 +18,7 @@ public class TestApplication {
         SpringApplication.run(TestApplication.class, args);
     }
 
-    @Component
+//    @Component
     @RequiredArgsConstructor
     @Slf4j
     static class PropertiesTest implements ApplicationRunner {
