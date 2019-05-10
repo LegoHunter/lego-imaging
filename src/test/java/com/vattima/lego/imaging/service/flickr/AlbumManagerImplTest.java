@@ -42,7 +42,7 @@ public class AlbumManagerImplTest {
         bricklinkInventoryDao = mock(BricklinkInventoryDao.class);
         photoServiceUploadManager = mock(PhotoServiceUploadManager.class);
         imageManager = new ImageManagerImpl();
-        albumManager = new AlbumManagerImpl(imageManager, legoImagingProperties, photoServiceUploadManager, bricklinkInventoryDao);
+        albumManager = new AlbumManagerImpl(imageManager, legoImagingProperties, bricklinkInventoryDao);
     }
 
     @Test
@@ -79,7 +79,7 @@ public class AlbumManagerImplTest {
 
         UnitTestUtils.deleteSubDirectoriesInPath(jpgPath);
 
-        AlbumManager albumManager = new AlbumManagerImpl(imageManager, legoImagingProperties, photoServiceUploadManager, bricklinkInventoryDao);
+        AlbumManager albumManager = new AlbumManagerImpl(imageManager, legoImagingProperties, bricklinkInventoryDao);
         PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0504-missing-uuid.jpg"));
         Optional<AlbumManifest> albumManifest = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest).isEmpty();

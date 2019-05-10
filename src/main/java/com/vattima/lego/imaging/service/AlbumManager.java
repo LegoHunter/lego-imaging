@@ -12,8 +12,6 @@ public interface AlbumManager {
 
     Optional<AlbumManifest> movePhoto(PhotoMetaData photoMetaData);
 
-    void updatePhotoService();
-
     Optional<AlbumManifest> getAlbumManifest(String uuid);
 
     AlbumManifest readAlbumManifest(Path path);

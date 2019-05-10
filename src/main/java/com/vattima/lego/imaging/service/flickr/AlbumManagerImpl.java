@@ -6,14 +6,11 @@ import com.vattima.lego.imaging.model.AlbumManifest;
 import com.vattima.lego.imaging.model.PhotoMetaData;
 import com.vattima.lego.imaging.service.AlbumManager;
 import com.vattima.lego.imaging.service.ImageManager;
-import com.vattima.lego.imaging.service.PhotoServiceUploadManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.bricklink.data.lego.dao.BricklinkInventoryDao;
 import net.bricklink.data.lego.dto.BricklinkInventory;
 import org.springframework.stereotype.Component;
-import static java.util.stream.Stream.Builder;
-import static java.nio.file.FileVisitResult.*;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -23,13 +20,15 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import static java.nio.file.FileVisitResult.CONTINUE;
+import static java.util.stream.Stream.Builder;
+
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class AlbumManagerImpl implements AlbumManager {
     private final ImageManager imageManager;
     private final LegoImagingProperties legoImagingProperties;
-    private final PhotoServiceUploadManager photoServiceUploadManager;
     private final BricklinkInventoryDao bricklinkInventoryDao;
 
     private Map<String, AlbumManifest> albums = new ConcurrentHashMap<>();
@@ -125,7 +124,6 @@ public class AlbumManagerImpl implements AlbumManager {
                 albumManifest.getPhotos()
                              .add(photoMetaData);
                 movePhoto(photoMetaData);
-                photoServiceUploadManager.queue(albumManifest);
                 log.info("MD5 hash has changed from [{}] to [{}] - upload necessary [{}]", photoMetaDataInAlbum.get()
                                                                                                                .getMd5(), photoMetaData.getMd5(), photoMetaData);
             }
@@ -135,7 +133,6 @@ public class AlbumManagerImpl implements AlbumManager {
             albumManifest.getPhotos()
                          .add(photoMetaData);
             movePhoto(photoMetaData);
-            photoServiceUploadManager.queue(albumManifest);
             log.info("Added photo [{}] to album manifest [{}]", photoMetaData, albumManifest);
             log.info("New Photo - upload necessary [{}]", photoMetaData);
         }
@@ -150,11 +147,6 @@ public class AlbumManagerImpl implements AlbumManager {
         writeAlbumManifest(albumManifest);
 
         return Optional.of(albumManifest);
-    }
-
-    @Override
-    public void updatePhotoService() {
-        photoServiceUploadManager.updateAll();
     }
 
     @Override

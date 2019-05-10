@@ -34,18 +34,14 @@ public class PhotoServiceUploadManagerImpl implements PhotoServiceUploadManager 
     private final PhotosetsInterface photosetsInterface;
     private final IUploader uploader;
     private final LegoImagingProperties legoImagingProperties;
+    private final AlbumManager albumManager;
 
     private Set<AlbumManifest> albumManifests = new HashSet<>();
 
     @Override
-    public void queue(AlbumManifest albumManifest) {
-        albumManifests.add(albumManifest);
-    }
-
-    @Override
     public void updateAll() {
         final Path root = Paths.get(legoImagingProperties.getRootImagesFolder());
-        albumManifests.forEach(a -> {
+        albumManager.findManifests(root).forEach(a -> {
             // Upload all new/changed photos
             a.getPhotos()
              .forEach(pmd -> {

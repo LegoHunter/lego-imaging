@@ -64,42 +64,6 @@ public class PhotoServiceUploadManagerImplTest {
         imageManager = new ImageManagerImpl();
     }
 
-    @Test
-    public void queue() throws Exception {
-        log.info("FlickrProperties [{}]", flickrProperties);
-        PhotoServiceUploadManager photoServiceUploadManager = new PhotoServiceUploadManagerImpl(photosetsInterface, uploader, legoImagingProperties);
-        albumManager = new AlbumManagerImpl(imageManager, legoImagingProperties, photoServiceUploadManager,bricklinkInventoryDao);
-
-        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:lego-photos-upload-test")
-                                              .toURI());
-        Path jpgChangedPath = Paths.get(ResourceUtils.getURL("classpath:lego-photos-upload-test-changed")
-                                                     .toURI());
-        UnitTestUtils.deleteSubDirectoriesInPath(jpgPath);
-        UnitTestUtils.deleteSubDirectoriesInPath(jpgChangedPath);
-        legoImagingProperties.setRootImagesFolder(jpgPath.toAbsolutePath()
-                                                         .toString());
-
-        Files.newDirectoryStream(jpgPath, "*.jpg")
-             .forEach(p -> {
-                 log.info("Found image [{}]", p);
-                 PhotoMetaData photoMetaData = new PhotoMetaData(p);
-                 Optional<AlbumManifest> albumManifest = albumManager.addPhoto(photoMetaData);
-             });
-        albumManager.updatePhotoService();
-
-        Files.newDirectoryStream(jpgChangedPath, "*.jpg")
-             .forEach(p -> {
-                 log.info("Found changed image [{}]", p);
-                 PhotoMetaData photoMetaData = new PhotoMetaData(p);
-                 Optional<AlbumManifest> albumManifest = albumManager.addPhoto(photoMetaData);
-             });
-        albumManager.updatePhotoService();
-    }
-
-    @Test
-    public void updateAll() {
-    }
-
     @Configuration
     static class TestConfig {
 

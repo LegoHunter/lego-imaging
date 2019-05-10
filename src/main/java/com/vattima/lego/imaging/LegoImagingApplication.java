@@ -4,6 +4,7 @@ import com.vattima.lego.imaging.config.LegoImagingProperties;
 import com.vattima.lego.imaging.flickr.configuration.FlickrProperties;
 import com.vattima.lego.imaging.model.PhotoMetaData;
 import com.vattima.lego.imaging.service.AlbumManager;
+import com.vattima.lego.imaging.service.PhotoServiceUploadManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -25,12 +26,13 @@ public class LegoImagingApplication {
         SpringApplication.run(LegoImagingApplication.class, args);
     }
 
-    //@Component
+    @Component
     @RequiredArgsConstructor
     private class ImageRunner implements ApplicationRunner {
         private final FlickrProperties flickrProperties;
         private final AlbumManager albumManager;
         private final LegoImagingProperties legoImagingProperties;
+        private final PhotoServiceUploadManager photoServiceUploadManager;
 
         @Override
         public void run(ApplicationArguments args) throws Exception {
@@ -40,7 +42,7 @@ public class LegoImagingApplication {
                      PhotoMetaData photoMetaData = new PhotoMetaData(p.getParent(), p.getFileName());
                      albumManager.addPhoto(photoMetaData);
                  });
-            albumManager.updatePhotoService();
+            photoServiceUploadManager.updateAll();
         }
     }
 
