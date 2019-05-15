@@ -64,6 +64,11 @@ public class PhotoServiceUploadManagerImplTest {
         imageManager = new ImageManagerImpl();
     }
 
+    @Test
+    public void dummy() {
+
+    }
+
     @Configuration
     static class TestConfig {
 
