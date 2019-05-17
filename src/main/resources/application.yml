@@ -59,6 +59,10 @@ flickr:
    debug-request: false
    debug-stream: false
 
+bitly:
+   client-config-dir: C:\Users\tvatt\.credentials\bitly.api
+   client-config-file: bitly-client-api-keys.json
+
 mybatis:
    type-aliases-package: com.vattima.lego.data.ibatis.type.aliases
    type-handlers-package: com.vattima.lego.data.ibatis.type.handler
