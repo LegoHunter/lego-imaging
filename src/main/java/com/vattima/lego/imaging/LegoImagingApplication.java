@@ -12,6 +12,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Component;
 
 import java.nio.file.Files;
 
@@ -25,7 +26,7 @@ public class LegoImagingApplication {
         SpringApplication.run(LegoImagingApplication.class, args);
     }
 
-    //@Component
+    @Component
     @RequiredArgsConstructor
     private class ImageRunner implements ApplicationRunner {
         private final FlickrProperties flickrProperties;

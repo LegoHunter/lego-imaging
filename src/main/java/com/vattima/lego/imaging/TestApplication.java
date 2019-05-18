@@ -1,6 +1,7 @@
 package com.vattima.lego.imaging;
 
 
+import com.vattima.lego.imaging.bitly.configuration.BitlyProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.bricklink.data.lego.ibatis.configuration.DataSourceProperties;
@@ -18,15 +19,17 @@ public class TestApplication {
         SpringApplication.run(TestApplication.class, args);
     }
 
-//    @Component
+    //@Component
     @RequiredArgsConstructor
     @Slf4j
     static class PropertiesTest implements ApplicationRunner {
         private final DataSourceProperties properties;
+        private final BitlyProperties bitlyProperties;
 
         @Override
         public void run(ApplicationArguments args) throws Exception {
             log.info("properties [{}]", properties);
+            log.info("bitly properties [{}]", bitlyProperties);
         }
     }
 }

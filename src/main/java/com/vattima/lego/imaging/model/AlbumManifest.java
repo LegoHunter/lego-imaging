@@ -35,6 +35,7 @@ public class AlbumManifest {
     private String title;
     private String description;
     private URL url;
+    private URL shortUrl;
     private String uuid;
     private String blItemNumber;
     private List<PhotoMetaData> photos = new ArrayList<>();
