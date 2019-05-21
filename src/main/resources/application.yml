@@ -5,8 +5,6 @@ spring:
       name: Lego Imaging Application
    datasource:
       url: jdbc:mysql://shared50.accountservergroup.com:3306/a925261_dev_lego?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
-      username: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-      password: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
       client-config-dir: C:\Users\tvatt\.credentials\site5\database
       client-config-file: site5-database-configuration.json
       database-key-name: site5-lego-dev
@@ -24,15 +22,16 @@ spring:
 
 logging:
    level:
-      root: INFO
+      root: DEBUG
       com.vattima.lego.data.ibatis.mapper: WARN
       net.bricklink.data: WARN
+      com.bricklink: WARN
       org.springframework.jdbc: WARN
       org.mybatis: WARN
       com.gargoylesoftware: ERROR
       com.gargoylesoftware.htmlunit.javascript.StrictErrorReporter: OFF
       com.zaxxer: DEBUG
-      feign: DEBUG
+      feign: WARN
       sun: WARN
 
 bricklink:

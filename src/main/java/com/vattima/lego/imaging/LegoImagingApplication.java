@@ -26,7 +26,7 @@ public class LegoImagingApplication {
         SpringApplication.run(LegoImagingApplication.class, args);
     }
 
-    @Component
+    //@Component
     @RequiredArgsConstructor
     private class ImageRunner implements ApplicationRunner {
         private final FlickrProperties flickrProperties;
