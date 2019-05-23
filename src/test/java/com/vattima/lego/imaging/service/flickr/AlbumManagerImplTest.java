@@ -93,16 +93,16 @@ public class AlbumManagerImplTest {
 
         when(bricklinkInventoryDao.getByUuid(any(String.class))).thenReturn(new BricklinkInventory());
 
-        Optional<AlbumManifest> emptyAlbumManifest = albumManager.getAlbumManifest("bogus");
-        assertThat(emptyAlbumManifest).isEmpty();
+        AlbumManifest emptyAlbumManifest = albumManager.getAlbumManifest("bogus", "1234-1");
+        assertThat(emptyAlbumManifest).isNotNull();
 
         PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0505.jpg"));
         Optional<AlbumManifest> albumManifest1 = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest1).isNotEmpty();
         String uuid = photoMetaData.getKeyword("uuid");
-        Optional<AlbumManifest> albumManifestWithUuid = albumManager.getAlbumManifest(uuid);
-        assertThat(albumManifestWithUuid).isNotEmpty();
-        assertThat(albumManifestWithUuid.get()).isSameAs(albumManifest1.get());
+        AlbumManifest albumManifestWithUuid = albumManager.getAlbumManifest(uuid, "1234-1");
+        assertThat(albumManifestWithUuid).isNotNull();
+        assertThat(albumManifestWithUuid).isSameAs(albumManifest1.get());
 
         photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0506.jpg"));
         Optional<AlbumManifest> albumManifest2 = albumManager.addPhoto(photoMetaData);
@@ -155,10 +155,9 @@ public class AlbumManagerImplTest {
                  System.out.println("Processing [" + pmd.getAbsolutePath() + "]");
                  imageManager.getKeywords(pmd, legoImagingProperties.getKeywordsKeyName());
                  String uuid = pmd.getKeyword("uuid");
-                 Optional<AlbumManifest> albumManifest = albumManager.getAlbumManifest(uuid);
-                 assertThat(albumManifest).isNotEmpty();
-                 List<PhotoMetaData> photos = albumManifest.map(AlbumManifest::getPhotos)
-                                                           .orElseGet(Collections::emptyList);
+                 AlbumManifest albumManifest = albumManager.getAlbumManifest(uuid, "1234-1");
+                 assertThat(albumManifest).isNotNull();
+                 List<PhotoMetaData> photos = albumManifest.getPhotos();
 
                  Optional<AlbumManifest> albumManifestWithChangedPhotos = albumManager.addPhoto(pmd);
                  Optional<PhotoMetaData> photoMetaData = albumManifestWithChangedPhotos.get()

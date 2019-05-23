@@ -12,7 +12,7 @@ public interface AlbumManager {
 
     Optional<AlbumManifest> movePhoto(PhotoMetaData photoMetaData);
 
-    Optional<AlbumManifest> getAlbumManifest(String uuid);
+    AlbumManifest getAlbumManifest(String uuid, String blItemNumber);
 
     AlbumManifest readAlbumManifest(Path path);
     void writeAlbumManifest(AlbumManifest albumManifest);

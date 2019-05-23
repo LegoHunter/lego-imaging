@@ -72,31 +72,7 @@ public class AlbumManagerImpl implements AlbumManager {
             return Optional.empty();
         }
 
-        // if uuid is a key in the map, get AlbumManifest out of the Map.
-        if (albums.containsKey(uuid)) {
-            albumManifest = albums.get(uuid);
-            log.info("Found AlbumManifest in cache [{}]", albumManifest);
-        } else {
-            // Get Path to AlbumManifest file
-            Path albumManifestPath = AlbumManifest.getAlbumManifestFile(legoImagingProperties.getRootImagesPath(), photoMetaData);
-
-            // check for existence of AlbumManifest json file
-            if (Files.exists(albumManifestPath)) {
-                // If it exists, read it into an AlbumManifest
-                albumManifest = readAlbumManifest(albumManifestPath);
-                log.info("Read AlbumManifest [{}] from file [{}]", albumManifest, albumManifestPath);
-            } else {
-                // else if it doesn't exist, create an empty AlbumManifest
-                albumManifest = new AlbumManifest();
-                albumManifest.setUuid(uuid);
-                albumManifest.setBlItemNumber(blItemNumber);
-                albumManifest.setNew(true);
-                log.info("Created new AlbumManifest [{}]", albumManifest);
-            }
-            // add AlbumManifest to the map
-            albums.put(uuid, albumManifest);
-            log.info("Put AlbumManifest [{}] in cache", albumManifest);
-        }
+        albumManifest = getAlbumManifest(uuid, blItemNumber);
 
         // compute MD5 hash of the photo
         String md5Hash = photoMetaData.getMd5();
@@ -160,8 +136,35 @@ public class AlbumManagerImpl implements AlbumManager {
     }
 
     @Override
-    public Optional<AlbumManifest> getAlbumManifest(String uuid) {
-        return Optional.ofNullable(albums.get(uuid));
+    public AlbumManifest getAlbumManifest(String uuid, String blItemNumber) {
+        AlbumManifest albumManifest;
+
+        // if uuid is a key in the map, get AlbumManifest out of the Map.
+        if (albums.containsKey(uuid)) {
+            albumManifest = albums.get(uuid);
+            log.info("Found AlbumManifest in cache [{}]", albumManifest);
+        } else {
+            // Get Path to AlbumManifest file
+            Path albumManifestPath = AlbumManifest.getAlbumManifestFile(legoImagingProperties.getRootImagesPath(), uuid, blItemNumber);
+
+            // check for existence of AlbumManifest json file
+            if (Files.exists(albumManifestPath)) {
+                // If it exists, read it into an AlbumManifest
+                albumManifest = readAlbumManifest(albumManifestPath);
+                log.info("Read AlbumManifest [{}] from file [{}]", albumManifest, albumManifestPath);
+            } else {
+                // else if it doesn't exist, create an empty AlbumManifest
+                albumManifest = new AlbumManifest();
+                albumManifest.setUuid(uuid);
+                albumManifest.setBlItemNumber(blItemNumber);
+                albumManifest.setNew(true);
+                log.info("Created new AlbumManifest [{}]", albumManifest);
+            }
+            // add AlbumManifest to the map
+            albums.put(uuid, albumManifest);
+            log.info("Put AlbumManifest [{}] in cache", albumManifest);
+        }
+        return albumManifest;
     }
 
     @RequiredArgsConstructor
