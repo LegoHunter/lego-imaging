@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,6 +22,7 @@ import java.util.Optional;
 @Setter
 @Getter
 @ToString
+@Slf4j
 @Configuration
 @ConfigurationProperties(prefix = "bitly")
 public class BitlyProperties {
@@ -34,13 +36,11 @@ public class BitlyProperties {
 
     public void setClientConfigDir(Path clientConfigDir) {
         this.clientConfigDir = clientConfigDir;
-        System.out.println(getClientConfigDir());
         loadPropertiesFromJson();
     }
 
     public void setClientConfigFile(Path clientConfigFile) {
         this.clientConfigFile = clientConfigFile;
-        System.out.println(getClientConfigFile());
         loadPropertiesFromJson();
     }
 
@@ -55,6 +55,7 @@ public class BitlyProperties {
                 mapper.configure(DeserializationFeature.UNWRAP_ROOT_VALUE, true);
                 try {
                     bitly = mapper.readValue(jsonConfigFile.toFile(), Bitly.class);
+                    log.info("Loaded secure configuration [{}] from path [{}]", clientConfigFile, clientConfigDir);
                 } catch (IOException e) {
                     throw new LegoImagingException(e);
                 }

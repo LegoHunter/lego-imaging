@@ -48,6 +48,8 @@ public class AlbumManifestTest {
 
         PhotoMetaData primary = albumManifest.getPrimaryPhoto();
         assertThat(primary).isSameAs(pmd2);
+
+        assertThat(albumManifest.hasPrimaryPhoto()).isTrue();
     }
 
     @Test
@@ -73,6 +75,7 @@ public class AlbumManifestTest {
 
         PhotoMetaData primary = albumManifest.getPrimaryPhoto();
         assertThat(primary).isSameAs(pmd1);
+        assertThat(albumManifest.hasPrimaryPhoto()).isFalse();
     }
 
     @Test
@@ -80,6 +83,7 @@ public class AlbumManifestTest {
         AlbumManifest albumManifest = new AlbumManifest();
         assertThatThrownBy(albumManifest::getPrimaryPhoto).isInstanceOf(LegoImagingException.class)
                                                           .hasMessage("No photos exist from which to select a primary photo");
+        assertThat(albumManifest.hasPrimaryPhoto()).isFalse();
     }
 
     @Test

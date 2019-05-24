@@ -64,6 +64,14 @@ public class AlbumManifest {
     }
 
     @JsonIgnore
+    public boolean hasPrimaryPhoto() {
+        Optional<PhotoMetaData> primary = photos.stream()
+                                                .filter(PhotoMetaData::getPrimary)
+                                                .reduce((a, b) -> null);
+        return primary.isPresent();
+    }
+
+    @JsonIgnore
     public Path getAlbumManifestPath(Path root) {
         return getAlbumManifestPath(root, getUuid(), getBlItemNumber());
     }

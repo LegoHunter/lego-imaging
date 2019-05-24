@@ -9,6 +9,7 @@ import com.flickr4java.flickr.auth.Permission;
 import com.flickr4java.flickr.photosets.Photosets;
 import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.nio.file.Paths;
@@ -17,6 +18,7 @@ import java.nio.file.Paths;
 public class FlickrTest {
 
     @Test
+    @Ignore
     public void flickr_photosets_getList() throws Exception {
         FlickrProperties flickrProperties = new FlickrProperties();
         flickrProperties.setClientConfigDir(Paths.get("C:\\Users\\tvatt\\.credentials\\flickr.api"));

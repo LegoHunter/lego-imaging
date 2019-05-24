@@ -23,6 +23,7 @@ aspring:
 logging:
    level:
       root: DEBUG
+      com.vattima.lego.command: INFO
       com.vattima.lego.data.ibatis.mapper: WARN
       net.bricklink.data: WARN
       com.bricklink: WARN
