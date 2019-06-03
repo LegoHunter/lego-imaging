@@ -1,5 +1,6 @@
 package com.vattima.lego.imaging.service;
 
+import com.vattima.lego.imaging.LegoImagingException;
 import lombok.extern.slf4j.Slf4j;
 import org.imgscalr.Scalr;
 
@@ -11,12 +12,16 @@ import java.nio.file.Paths;
 
 @Slf4j
 public class ImageScalingService {
-    public void scale(Path path) {
+    public Path scale(Path path) {
+        Path tempFile = null;
+
         BufferedImage originalImage = null;
 
         BufferedInputStream bis = null;
         BufferedOutputStream bos = null;
         try {
+            tempFile = java.nio.file.Files.createTempFile(Paths.get("C:\\temp"), "resized-" + path.getFileName(), ".jpg");
+
             InputStream fis = new FileInputStream(path.toFile());
             bis = new BufferedInputStream(fis, 1024*16);
             originalImage = ImageIO.read(bis);
@@ -40,19 +45,15 @@ public class ImageScalingService {
                 bos.close();
                 iterationWasUnderSize = size < 2000000L;
                 if (inRange(size) || (iterationWasUnderSize && iteration == 0)) {
-                    Path tempFile = java.nio.file.Files.createTempFile(Paths.get("C:\\temp"), "resized-", ".jpg");
-                    log.info("writing scaled image with width [{}] and size [{}] to [{}]", resizedImage.getWidth(), size, tempFile);
                     FileOutputStream fos = new FileOutputStream(tempFile.toFile());
                     bos = new BufferedOutputStream(fos, 1024*16);
                     ImageIO.write(resizedImage, "JPG", bos);
                     break;
-                } else {
                 }
                 iteration++;
             } while (true);
-
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new LegoImagingException(e);
         } finally {
             try {
                 bis.close();
@@ -61,6 +62,7 @@ public class ImageScalingService {
                 e.printStackTrace();
             }
         }
+        return tempFile;
     }
     private boolean inRange(long size) {
         return (size < 2000000L) && (size > 1990000L);

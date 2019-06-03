@@ -23,7 +23,8 @@ public class ImageScalingServiceTest {
             Stream<Path> paths = builder.build();
             paths.limit(10).forEach(p -> {
                 log.info("path [{}]", p);
-                imageScalingService.scale(p);
+                Path tempPath = imageScalingService.scale(p);
+                log.info("Scaled [{}] to [{}]", p, tempPath);
             });
         } catch (IOException e) {
             throw new LegoImagingException(e);
