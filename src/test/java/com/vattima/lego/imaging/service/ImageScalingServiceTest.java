@@ -19,7 +19,7 @@ public class ImageScalingServiceTest {
         try {
             ImageScalingService imageScalingService = new ImageScalingService();
             Stream.Builder<Path> builder = Stream.builder();
-            Files.walkFileTree(Paths.get("C:\\Users\\tvatt\\Desktop\\lego-collection-photos - all"), new JpgFileVisitor(builder));
+            Files.walkFileTree(Paths.get("C:\\Users\\tvatt\\Desktop\\lego-collection-photos"), new JpgFileVisitor(builder));
             Stream<Path> paths = builder.build();
             paths.limit(10).forEach(p -> {
                 log.info("path [{}]", p);
@@ -33,7 +33,7 @@ public class ImageScalingServiceTest {
 
     @RequiredArgsConstructor
     private static class JpgFileVisitor extends SimpleFileVisitor<Path> {
-        private final PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:*.jpg");
+        private final PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:DSC_1340.jpg");
         private final Stream.Builder<Path> builder;
 
         @Override
