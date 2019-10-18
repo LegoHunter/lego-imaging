@@ -10,6 +10,7 @@ import com.vattima.lego.imaging.LegoImagingException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import net.bricklink.data.lego.dto.BricklinkInventory;
 
 import java.io.IOException;
@@ -30,6 +31,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include;
 @Setter
 @ToString
 @JsonInclude(Include.NON_NULL)
+@Slf4j
 public class AlbumManifest {
     private String photosetId;
     private String title;
@@ -51,9 +53,14 @@ public class AlbumManifest {
 
     @JsonIgnore
     public PhotoMetaData getPrimaryPhoto() {
-        Optional<PhotoMetaData> primary = photos.stream()
+         Optional<PhotoMetaData> primary = photos.stream()
                                                 .filter(PhotoMetaData::getPrimary)
-                                                .reduce((a, b) -> null);
+                                                .reduce((a, b) -> {
+                                                    log.warn("Multiple Photos are marked primary for uuid [{}], item [{}] - choosing the first one below", getUuid(), getBlItemNumber());
+                                                    log.warn("[{}]", a);
+                                                    log.warn("[{}]", b);
+                                                    return a;
+                                                });
         return primary.orElseGet(() -> {
             if (photos.size() > 0) {
                 return photos.get(0);
@@ -67,7 +74,7 @@ public class AlbumManifest {
     public boolean hasPrimaryPhoto() {
         Optional<PhotoMetaData> primary = photos.stream()
                                                 .filter(PhotoMetaData::getPrimary)
-                                                .reduce((a, b) -> null);
+                                                .findFirst();
         return primary.isPresent();
     }
 

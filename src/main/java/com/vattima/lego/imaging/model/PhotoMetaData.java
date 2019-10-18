@@ -70,7 +70,7 @@ public class PhotoMetaData {
         if (null == keywords) {
             return this.primary;
         } else {
-            return Optional.ofNullable(keywords.get("primary")).map(v -> v.equals("primary")).orElse(false);
+            return keywords.containsKey("primary");
         }
     }
 
