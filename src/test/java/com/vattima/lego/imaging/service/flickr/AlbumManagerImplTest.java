@@ -153,7 +153,7 @@ public class AlbumManagerImplTest {
              .map(PhotoMetaData::new)
              .forEach(pmd -> {
                  System.out.println("Processing [" + pmd.getAbsolutePath() + "]");
-                 imageManager.getKeywords(pmd, legoImagingProperties.getKeywordsKeyName());
+                 imageManager.getKeywords(pmd);
                  String uuid = pmd.getKeyword("uuid");
                  AlbumManifest albumManifest = albumManager.getAlbumManifest(uuid, "1234-1");
                  assertThat(albumManifest).isNotNull();

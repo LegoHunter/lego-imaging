@@ -6,6 +6,8 @@ import org.junit.Test;
 
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -48,5 +50,24 @@ public class PhotoMetaDataTest {
         PhotoMetaData photoMetaData_folder2_DSC_0504_JPG = new PhotoMetaData(folder2_DSC_0504_JPG);
         assertThat(photoMetaData_folder1_DSC_0504_JPG).isEqualTo(photoMetaData_folder2_DSC_0504_JPG);
         assertThat(photoMetaData_folder2_DSC_0504_JPG.hashCode()).isEqualTo(photoMetaData_folder2_DSC_0504_JPG.hashCode());
+    }
+
+    @Test
+    public void setKeywords_addsUniqueExtraDescription() throws Exception {
+        Path jpgPath = PathUtils.fromClasspath("photo-metadata-test", "DSC_0504.JPG");
+        PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath);
+
+        Map<String, String> keywords = new HashMap<>();
+        keywords.put("cp", "this is extra description #1");
+        photoMetaData.setKeywords(keywords);
+        assertThat(photoMetaData.getKeywords()).containsEntry("cp", "this is extra description #1");
+
+        keywords.put("cp", "this is extra description #2");
+        photoMetaData.setKeywords(keywords);
+        assertThat(photoMetaData.getKeywords()).containsEntry("cp", "this is extra description #2");
+
+        keywords.put("cp", "this is the third extra description that are different than the first two");
+        photoMetaData.setKeywords(keywords);
+        assertThat(photoMetaData.getKeywords()).containsEntry("cp", "this is the third extra description that are different than the first two");
     }
 }

@@ -18,6 +18,7 @@ import java.nio.file.StandardCopyOption;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -40,7 +41,7 @@ public class PhotoMetaData {
     private Path path;
 
     private Path filename;
-    private Map<String, String> keywords;
+    private Map<String, String> keywords = new HashMap<>();
     private String md5;
     private String photoId;
     private int uploadReturnCode;
@@ -67,11 +68,9 @@ public class PhotoMetaData {
 
     @JsonProperty("primary")
     public boolean getPrimary() {
-        if (null == keywords) {
-            return this.primary;
-        } else {
-            return keywords.containsKey("primary");
-        }
+        return (this.primary || Optional.ofNullable(keywords)
+                                        .map(m -> m.containsKey("primary"))
+                                        .orElse(false));
     }
 
     public void setPrimary(boolean primary) {

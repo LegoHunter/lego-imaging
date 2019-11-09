@@ -58,17 +58,17 @@ public class AlbumManagerImpl implements AlbumManager {
         AlbumManifest albumManifest;
 
         // Extract the keywords from the PhotoMetaData
-        imageManager.getKeywords(photoMetaData, legoImagingProperties.getKeywordsKeyName());
+        imageManager.getKeywords(photoMetaData);
 
         // get uuid and blItemNumber
         String uuid = photoMetaData.getKeyword("uuid");
         if (null == uuid) {
-            log.warn("Photo [{}] does not contain keyword uuid - photo will not be added to AlbumManifest", photoMetaData.getPath());
+            log.warn("Photo [{}] does not contain keyword uuid - photo will not be added to AlbumManifest", photoMetaData.getAbsolutePath());
             return Optional.empty();
         }
         String blItemNumber = photoMetaData.getKeyword("bl");
         if (null == blItemNumber) {
-            log.warn("Photo [{}] does not contain keyword bl - photo will not be added to AlbumManifest", photoMetaData.getPath());
+            log.warn("Photo [{}] does not contain keyword bl - photo will not be added to AlbumManifest", photoMetaData.getAbsolutePath());
             return Optional.empty();
         }
 
