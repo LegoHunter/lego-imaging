@@ -1,4 +1,4 @@
-aspring:
+spring:
    jmx:
       enabled: false
    application:

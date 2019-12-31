@@ -89,8 +89,7 @@ public class AlbumManagerImpl implements AlbumManager {
                 // Upload changed photo
                 PhotoMetaData oldPhotoMetaData = photoMetaDataInAlbum.get();
                 photoMetaData.setPhotoId(oldPhotoMetaData.getPhotoId());
-                photoMetaData.setKeywords(oldPhotoMetaData.getKeywords());
-                photoMetaData.setPrimary(oldPhotoMetaData.getPrimary());
+                photoMetaData.setPrimary(photoMetaData.getPrimary());
                 photoMetaData.setMd5(md5Hash);
                 photoMetaData.setUploadedTimeStamp(null);
                 photoMetaData.setUploadReturnCode(-1);

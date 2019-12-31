@@ -30,10 +30,6 @@ public class BitlyProperties {
     private Path clientConfigFile;
     private Bitly bitly;
 
-    public BitlyProperties() {
-        System.out.println("");
-    }
-
     public void setClientConfigDir(Path clientConfigDir) {
         this.clientConfigDir = clientConfigDir;
         loadPropertiesFromJson();
