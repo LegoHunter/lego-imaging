@@ -6,6 +6,7 @@ import com.flickr4java.flickr.RequestContext;
 import com.flickr4java.flickr.Transport;
 import com.flickr4java.flickr.auth.Auth;
 import com.flickr4java.flickr.auth.Permission;
+import com.flickr4java.flickr.collections.CollectionsInterface;
 import com.flickr4java.flickr.photos.upload.UploadInterface;
 import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import com.flickr4java.flickr.uploader.IUploader;
@@ -47,6 +48,11 @@ public class FlickrConfiguration {
     @Bean
     public PhotosetsInterface photosetsInterface(Secrets flickrSecrets, Transport flickrTransport) {
         return new PhotosetsInterface(flickrSecrets.getKey(), flickrSecrets.getSecret(), flickrTransport);
+    }
+
+    @Bean
+    public CollectionsInterface collectionsInterface(Secrets flickrSecrets, Transport flickrTransport) {
+        return new CollectionsInterface(flickrSecrets.getKey(), flickrSecrets.getSecret(), flickrTransport);
     }
 
     @Bean
