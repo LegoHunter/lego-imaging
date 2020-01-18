@@ -7,10 +7,10 @@ import com.flickr4java.flickr.Transport;
 import com.flickr4java.flickr.auth.Auth;
 import com.flickr4java.flickr.auth.Permission;
 import com.flickr4java.flickr.collections.CollectionsInterface;
+import com.flickr4java.flickr.photos.PhotosInterface;
 import com.flickr4java.flickr.photos.upload.UploadInterface;
 import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import com.flickr4java.flickr.uploader.IUploader;
-import com.flickr4java.flickr.uploader.Uploader;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,6 +48,11 @@ public class FlickrConfiguration {
     @Bean
     public PhotosetsInterface photosetsInterface(Secrets flickrSecrets, Transport flickrTransport) {
         return new PhotosetsInterface(flickrSecrets.getKey(), flickrSecrets.getSecret(), flickrTransport);
+    }
+
+    @Bean
+    public PhotosInterface photosInterface(Secrets flickrSecrets, Transport flickrTransport) {
+        return new PhotosInterface(flickrSecrets.getKey(), flickrSecrets.getSecret(), flickrTransport);
     }
 
     @Bean

@@ -1,6 +1,8 @@
 package com.vattima.lego.imaging.service.flickr;
 
 import com.flickr4java.flickr.FlickrException;
+import com.flickr4java.flickr.photos.Photo;
+import com.flickr4java.flickr.photos.PhotosInterface;
 import com.flickr4java.flickr.photosets.Photoset;
 import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import com.vattima.lego.imaging.LegoImagingException;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class FlickrPhotoServiceImpl implements FlickrPhotoService {
     private final PhotosetsInterface photosetsInterface;
+    private final PhotosInterface photosInterface;
 
     @Override
     public PhotoServiceResponse<Photoset> createAlbum(PhotoServiceRequest<AlbumManifest> request) throws LegoImagingException {
@@ -33,7 +36,21 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
         } catch (FlickrException e) {
             response = new FlickrServiceResponse<>(e, e.getErrorCode(), e.getErrorMessage());
         }
-        log.info("Flickr Response [{}]", response);
+        log.debug("Flickr Response [{}]", response);
+        return response;
+    }
+
+    @Override
+    public PhotoServiceResponse<Photo> getPhoto(PhotoServiceRequest<String> request) {
+        PhotoServiceResponse<Photo> response;
+        String photoId = request.get();
+        try {
+            Photo photo = photosInterface.getPhoto(photoId);
+            response = new FlickrServiceResponse<>(photo);
+        } catch (FlickrException e) {
+            response = new FlickrServiceResponse<>(e, e.getErrorCode(), e.getErrorMessage());
+        }
+        log.debug("Flickr Response [{}]", response);
         return response;
     }
 }
