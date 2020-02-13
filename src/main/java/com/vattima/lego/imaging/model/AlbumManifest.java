@@ -168,7 +168,7 @@ public class AlbumManifest {
         mapper.enable(SerializationFeature.WRAP_ROOT_VALUE);
         mapper.configure(DeserializationFeature.UNWRAP_ROOT_VALUE, true);
         try {
-            mapper.writeValue(Files.newBufferedWriter(jsonFile, StandardCharsets.UTF_8, StandardOpenOption.CREATE), albumManifest);
+            mapper.writerWithDefaultPrettyPrinter().writeValue(Files.newBufferedWriter(jsonFile, StandardCharsets.UTF_8), albumManifest);
         } catch (IOException e) {
             throw new LegoImagingException(e);
         }

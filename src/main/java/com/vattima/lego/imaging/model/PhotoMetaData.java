@@ -114,17 +114,18 @@ public class PhotoMetaData {
             try {
                 if (!Files.exists(targetDirectory, LinkOption.NOFOLLOW_LINKS)) {
                     Files.createDirectory(targetDirectory);
-                    log.info("Created directory path [{}]", targetDirectory);
+                    log.debug("Created directory path [{}]", targetDirectory);
                 }
                 Path targetFile = targetDirectory.resolve(getFilenameString());
                 if (Files.exists(targetFile, LinkOption.NOFOLLOW_LINKS)) {
                     Files.delete(targetFile);
-                    log.info("Deleted existing image [{}]", targetFile);
+                    log.debug("Deleted existing image [{}]", targetFile);
                 }
+                log.info("Moving image from [{}] to [{}]", getAbsolutePath(), targetFile);
                 Files.copy(getAbsolutePath(), targetFile, StandardCopyOption.REPLACE_EXISTING);
-                log.info("Copied image from [{}] to [{}]", getAbsolutePath(), targetFile);
+                log.debug("Copied image from [{}] to [{}]", getAbsolutePath(), targetFile);
                 Files.delete(getAbsolutePath());
-                log.info("Deleted old image [{}]", getAbsolutePath());
+                log.debug("Deleted old image [{}]", getAbsolutePath());
                 this.path = targetDirectory;
             } catch (IOException e) {
                 throw new LegoImagingException(e);

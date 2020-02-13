@@ -61,7 +61,7 @@ public class PhotoServiceUploadManagerImpl implements PhotoServiceUploadManager 
                              pmd.setChanged(false);
                              log.info("Uploaded changed photo [{}] in [{}] ms", pmd, timer.getTotalTimeMillis());
                          } else {
-                             log.info("Photo not changed [{}]", pmd);
+                             log.debug("Photo not changed [{}]", pmd);
                          }
                      } else {
                          UploadMetaData uploadMetaData = new UploadMetaData();

@@ -7,11 +7,24 @@ import org.imgscalr.Scalr;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Slf4j
 public class ImageScalingService {
+    public Path scale(URL url) {
+        Path tempFile = null;
+        try {
+            tempFile = java.nio.file.Files.createTempFile(Paths.get("C:\\temp"), "resized", "jpg");
+            BufferedImage image = ImageIO.read(url);
+            ImageIO.write(image, "jpg", tempFile.toFile());
+        } catch (IOException e) {
+            throw new LegoImagingException(e);
+        }
+        return tempFile;
+    }
+
     public Path scale(Path path) {
         Path tempFile = null;
 

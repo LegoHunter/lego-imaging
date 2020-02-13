@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.stream.Stream;
@@ -29,6 +30,13 @@ public class ImageScalingServiceTest {
         } catch (IOException e) {
             throw new LegoImagingException(e);
         }
+    }
+
+    @Test
+    public void scale_downloadsURL_returnsTempFile() throws Exception {
+        ImageScalingService imageScalingService = new ImageScalingService();
+        Path path = imageScalingService.scale(new URL("https://farm66.static.flickr.com/65535/49417636867_c433dc6ab2_c.jpg"));
+        System.out.println(path);
     }
 
     @RequiredArgsConstructor
