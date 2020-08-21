@@ -10,10 +10,10 @@ import com.vattima.lego.imaging.LegoImagingException;
 import com.vattima.lego.imaging.config.LegoImagingProperties;
 import com.vattima.lego.imaging.model.AlbumManifest;
 import com.vattima.lego.imaging.model.PhotoMetaData;
-import com.vattima.lego.imaging.service.bitly.BitlyService;
+import com.vattima.lego.imaging.model.bitly.ShortenRequest;
+import com.vattima.lego.imaging.service.bitly.BitlinksService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.swisstech.bitly.BitlyClient;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StopWatch;
 
@@ -37,7 +37,7 @@ public class PhotoServiceUploadManagerImpl implements PhotoServiceUploadManager 
     private final IUploader uploader;
     private final LegoImagingProperties legoImagingProperties;
     private final AlbumManager albumManager;
-    private final BitlyService bitlyService;
+    private final BitlinksService bitlinksService;
 
     private Set<AlbumManifest> albumManifests = new HashSet<>();
 
@@ -106,7 +106,9 @@ public class PhotoServiceUploadManagerImpl implements PhotoServiceUploadManager 
                             log.info("Created Photoset [{}] with primary photo id [{}] - filename [{}]", photoset, primaryPhotoId, primaryPhoto.getFilename());
                             a.setPhotosetId(photoset.getId());
                             a.setUrl(new URL(photoset.getUrl()));
-                            a.setShortUrl(bitlyService.shorten(a.getUrl()));
+                            ShortenRequest shortenRequest = new ShortenRequest();
+                            shortenRequest.setLongUrl(a.getUrl().toExternalForm());
+                            a.setShortUrl(new URL(bitlinksService.shorten(shortenRequest).getLink()));
                             return a.getPhotosetId();
                         } catch (MalformedURLException | FlickrException e) {
                             throw new LegoImagingException(e);

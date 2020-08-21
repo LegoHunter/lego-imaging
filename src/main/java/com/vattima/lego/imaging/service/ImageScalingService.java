@@ -16,7 +16,7 @@ public class ImageScalingService {
     public Path scale(URL url) {
         Path tempFile = null;
         try {
-            tempFile = java.nio.file.Files.createTempFile(Paths.get("C:\\temp"), "resized", "jpg");
+            tempFile = java.nio.file.Files.createTempFile(Paths.get("C:\\temp"), "resized", ".jpg");
             BufferedImage image = ImageIO.read(url);
             ImageIO.write(image, "jpg", tempFile.toFile());
         } catch (IOException e) {

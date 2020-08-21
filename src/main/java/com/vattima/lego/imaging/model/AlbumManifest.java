@@ -65,7 +65,7 @@ public class AlbumManifest {
             if (photos.size() > 0) {
                 return photos.get(0);
             } else {
-                throw new LegoImagingException("No photos exist from which to select a primary photo");
+                throw new LegoImagingException(String.format("No photos exist from which to select a primary photo for bricklink item number [%s], uuid [%s]", blItemNumber, uuid));
             }
         });
     }

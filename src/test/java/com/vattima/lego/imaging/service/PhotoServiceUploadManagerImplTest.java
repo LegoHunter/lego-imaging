@@ -4,11 +4,13 @@ import com.flickr4java.flickr.Transport;
 import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import com.flickr4java.flickr.uploader.IUploader;
 import com.vattima.lego.imaging.TestApplication;
+import com.vattima.lego.imaging.api.bitly.BitlinksAPI;
 import com.vattima.lego.imaging.config.LegoImagingProperties;
 import com.vattima.lego.imaging.flickr.configuration.FlickrConfiguration;
 import com.vattima.lego.imaging.flickr.configuration.FlickrProperties;
 import com.vattima.lego.imaging.model.AlbumManifest;
 import com.vattima.lego.imaging.model.PhotoMetaData;
+import com.vattima.lego.imaging.service.bitly.BitlinksService;
 import com.vattima.lego.imaging.service.flickr.AlbumManagerImpl;
 import com.vattima.lego.imaging.service.flickr.ImageManagerImpl;
 import com.vattima.lego.imaging.test.MockFlickerIUploader;
@@ -20,6 +22,7 @@ import net.bricklink.data.lego.ibatis.configuration.IbatisConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
 import org.springframework.context.annotation.Bean;
@@ -53,6 +56,11 @@ public class PhotoServiceUploadManagerImplTest {
     @Autowired
     BricklinkInventoryDao bricklinkInventoryDao;
 
+    BitlinksService bitlinksService;
+
+    @Mock
+    BitlinksAPI bitlinksAPI;
+
     private LegoImagingProperties legoImagingProperties;
     private ImageManager imageManager;
     private AlbumManager albumManager;
@@ -66,7 +74,8 @@ public class PhotoServiceUploadManagerImplTest {
 
     @Test
     public void dummy() {
-
+        BitlinksService bitlinksService = new BitlinksService(bitlinksAPI);
+        PhotoServiceUploadManagerImpl photoServiceUploadManager = new PhotoServiceUploadManagerImpl(photosetsInterface, uploader, legoImagingProperties, albumManager, bitlinksService);
     }
 
     @Configuration

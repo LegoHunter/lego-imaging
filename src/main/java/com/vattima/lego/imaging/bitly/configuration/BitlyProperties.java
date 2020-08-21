@@ -1,5 +1,6 @@
 package com.vattima.lego.imaging.bitly.configuration;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -65,5 +66,17 @@ public class BitlyProperties {
     @JsonRootName(value = "bitly")
     public static class Bitly {
         private String accessToken;
+        @JsonProperty(value = "oauth2")
+        private OAuth2 oAuth2;
+        private String baseUrl;
+    }
+
+    @Data
+    public static class OAuth2 {
+        @JsonProperty("client-id")
+        private String clientId;
+
+        @JsonProperty("client-secret")
+        private String clientSecret;
     }
 }
