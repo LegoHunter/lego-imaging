@@ -1,14 +1,8 @@
 package com.vattima.lego.imaging.service.flickr;
 
-import com.vattima.lego.imaging.model.AlbumManifest;
-import com.vattima.lego.imaging.service.PhotoServiceRequest;
-import com.vattima.lego.imaging.service.PhotoServiceResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class FlickrPhotoServiceTest {
 

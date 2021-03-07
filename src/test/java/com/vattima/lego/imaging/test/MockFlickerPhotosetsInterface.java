@@ -9,7 +9,6 @@ import com.flickr4java.flickr.photosets.Photoset;
 import com.flickr4java.flickr.photosets.Photosets;
 import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import com.vattima.lego.imaging.LegoImagingException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,7 +28,7 @@ public class MockFlickerPhotosetsInterface extends PhotosetsInterface {
 
     @Override
     public void addPhoto(String photosetId, String photoId) throws FlickrException {
-        throw new NotImplementedException();
+        throw new FlickrException(new UnsupportedOperationException());
     }
 
     @Override
@@ -46,12 +45,12 @@ public class MockFlickerPhotosetsInterface extends PhotosetsInterface {
 
     @Override
     public void delete(String photosetId) throws FlickrException {
-        throw new NotImplementedException();
+        throw new FlickrException(new UnsupportedOperationException());
     }
 
     @Override
     public void editMeta(String photosetId, String title, String description) throws FlickrException {
-        throw new NotImplementedException();
+        throw new FlickrException(new UnsupportedOperationException());
     }
 
     @Override
@@ -61,66 +60,66 @@ public class MockFlickerPhotosetsInterface extends PhotosetsInterface {
 
     @Override
     public PhotoContext getContext(String photoId, String photosetId) throws FlickrException {
-        throw new NotImplementedException();
+        throw new FlickrException(new UnsupportedOperationException());
     }
 
     @Override
     public Photoset getInfo(String photosetId) throws FlickrException {
-        throw new NotImplementedException();
+        throw new FlickrException(new UnsupportedOperationException());
     }
 
     @Override
     public Photosets getList(String userId) throws FlickrException {
-        throw new NotImplementedException();
+        throw new FlickrException(new UnsupportedOperationException());
     }
 
     @Override
     public Photosets getList(String userId, String primaryPhotoExtras) throws FlickrException {
-        throw new NotImplementedException();
+        throw new FlickrException(new UnsupportedOperationException());
     }
 
     @Override
     public Photosets getList(String userId, int perPage, int page, String primaryPhotoExtras) throws FlickrException {
-        throw new NotImplementedException();
+        throw new FlickrException(new UnsupportedOperationException());
     }
 
     @Override
     public int getPhotosetCount(String userId) throws FlickrException {
-        throw new NotImplementedException();
+        throw new FlickrException(new UnsupportedOperationException());
     }
 
     @Override
     public PhotoList<Photo> getPhotos(String photosetId, Set<String> extras, int privacy_filter, int perPage, int page) throws FlickrException {
-        throw new NotImplementedException();
+        throw new FlickrException(new UnsupportedOperationException());
     }
 
     @Override
     public PhotoList<Photo> getPhotos(String photosetId, int perPage, int page) throws FlickrException {
-        throw new NotImplementedException();
+        throw new FlickrException(new UnsupportedOperationException());
     }
 
     @Override
     public void orderSets(String[] photosetIds) throws FlickrException {
-        throw new NotImplementedException();
+        throw new FlickrException(new UnsupportedOperationException());
     }
 
     @Override
     public void removePhoto(String photosetId, String photoId) throws FlickrException {
-        throw new NotImplementedException();
+        throw new FlickrException(new UnsupportedOperationException());
     }
 
     @Override
     public void removePhotos(String photosetId, String photoIds) throws FlickrException {
-        throw new NotImplementedException();
+        throw new FlickrException(new UnsupportedOperationException());
     }
 
     @Override
     public void reorderPhotos(String photosetId, String photoIds) throws FlickrException {
-        throw new NotImplementedException();
+        throw new FlickrException(new UnsupportedOperationException());
     }
 
     @Override
     public void setPrimaryPhoto(String photosetId, String photoId) throws FlickrException {
-        throw new NotImplementedException();
+        throw new FlickrException(new UnsupportedOperationException());
     }
 }
