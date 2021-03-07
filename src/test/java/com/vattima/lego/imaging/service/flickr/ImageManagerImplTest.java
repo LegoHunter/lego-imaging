@@ -6,7 +6,7 @@ import com.vattima.lego.imaging.util.PathUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.common.ImageMetadata;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -17,9 +17,9 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
-public class ImageManagerImplTest {
+class ImageManagerImplTest {
     @Test
-    public void getKeywords_withJpgFileThatHasKeywords() throws Exception {
+    void getKeywords_withJpgFileThatHasKeywords() throws Exception {
         Path jpgPath = PathUtils.fromClasspath("jpgs", "jpeg-with-keywords.jpg");
         ImageManagerImpl imageManager = new ImageManagerImpl();
         PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath);
@@ -34,7 +34,7 @@ public class ImageManagerImplTest {
     }
 
     @Test
-    public void metaDataExtractor_extracts() throws Exception {
+    void metaDataExtractor_extracts() throws Exception {
 
         Path jpgPath = PathUtils.fromClasspath("lego-photo-with-metadata", "DSC_3368.JPG");
         List<? extends ImageMetadata.ImageMetadataItem> metadataItems = Imaging.getMetadata(jpgPath.toFile())
@@ -45,7 +45,7 @@ public class ImageManagerImplTest {
     }
 
     @Test
-    public void getKeywords_withJpgFileThatHasNoKeywords_returnsEmptyMap() throws Exception {
+    void getKeywords_withJpgFileThatHasNoKeywords_returnsEmptyMap() throws Exception {
         Path jpgPath = PathUtils.fromClasspath("jpgs", "jpeg-without-keywords.jpg");
         ImageManagerImpl imageManager = new ImageManagerImpl();
         PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath);
@@ -55,7 +55,7 @@ public class ImageManagerImplTest {
     }
 
     @Test
-    public void getMetadata_withCopyrightTitleCaption() throws Exception {
+    void getMetadata_withCopyrightTitleCaption() throws Exception {
         Path jpgPath = PathUtils.fromClasspath("lego-photo-with-metadata");
         ImageManagerImpl imageManager = new ImageManagerImpl();
         DirectoryStream<Path> paths = Files.newDirectoryStream(jpgPath, "DSC_3368.JPG");
@@ -71,7 +71,7 @@ public class ImageManagerImplTest {
     }
 
     @Test
-    public void getKeywords_withMultiWordKeyword_doesntSplitKeyword() throws Exception {
+    void getKeywords_withMultiWordKeyword_doesntSplitKeyword() throws Exception {
         Path jpgPath = PathUtils.fromClasspath("lego-photo-multi-word-keyword");
         ImageManagerImpl imageManager = new ImageManagerImpl();
         DirectoryStream<Path> paths = Files.newDirectoryStream(jpgPath, "IMG_20191016_214600.jpg");
@@ -91,7 +91,7 @@ public class ImageManagerImplTest {
     }
 
     @Test
-    public void getKeywords_withJpgFilesThatHaveKeywords_returnANonEmptyMap() throws Exception {
+    void getKeywords_withJpgFilesThatHaveKeywords_returnANonEmptyMap() throws Exception {
         Path jpgPath = PathUtils.fromClasspath("actual-lego-photos-with-keywords");
         ImageManagerImpl imageManager = new ImageManagerImpl();
         DirectoryStream<Path> paths = Files.newDirectoryStream(jpgPath, "*.jpg");

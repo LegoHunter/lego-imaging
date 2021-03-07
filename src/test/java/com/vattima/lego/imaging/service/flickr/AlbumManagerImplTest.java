@@ -11,8 +11,8 @@ import com.vattima.lego.imaging.test.UnitTestUtils;
 import com.vattima.lego.imaging.util.PathUtils;
 import net.bricklink.data.lego.dao.BricklinkInventoryDao;
 import net.bricklink.data.lego.dto.BricklinkInventory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.util.ResourceUtils;
 
 import java.nio.file.Files;
@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class AlbumManagerImplTest {
+class AlbumManagerImplTest {
     private LegoImagingProperties legoImagingProperties;
     private ImageManager imageManager;
     private AlbumManager albumManager;
@@ -34,7 +34,7 @@ public class AlbumManagerImplTest {
     private BricklinkInventoryDao bricklinkInventoryDao;
     private PhotoServiceUploadManager photoServiceUploadManager;
 
-    @Before
+    @BeforeEach
     public void setup() {
         flickrProperties = new FlickrProperties();
         legoImagingProperties = new LegoImagingProperties();
@@ -46,14 +46,14 @@ public class AlbumManagerImplTest {
     }
 
     @Test
-    public void findManifests_returnsNonEmptyStream() throws Exception {
+    void findManifests_returnsNonEmptyStream() throws Exception {
         Path path = PathUtils.fromClasspath("album-manager-test/find-manifests-test");
         Stream<AlbumManifest> albumManifests = albumManager.findManifests(path);
         assertThat(albumManifests).isNotEmpty().hasSize(6);
     }
 
     @Test
-    public void addPhoto() throws Exception {
+    void addPhoto() throws Exception {
         Path jpgPath = PathUtils.fromClasspath("album-manager-test/add-photo-test");
         legoImagingProperties.setRootImagesFolder(jpgPath.toFile()
                                                          .getAbsolutePath());
@@ -68,7 +68,7 @@ public class AlbumManagerImplTest {
 
 
     @Test
-    public void addPhoto_withNoUuid_returnsNull() throws Exception {
+    void addPhoto_withNoUuid_returnsNull() throws Exception {
         FlickrProperties flickrProperties = new FlickrProperties();
 
         Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:actual-lego-photos-with-keyword-issues")
@@ -86,7 +86,7 @@ public class AlbumManagerImplTest {
     }
 
     @Test
-    public void addPhoto_inSameAlbum_returnsCachedAlbumManifest() throws Exception {
+    void addPhoto_inSameAlbum_returnsCachedAlbumManifest() throws Exception {
         Path jpgPath = PathUtils.fromClasspath("actual-lego-photos-with-keywords-cache-test");
         legoImagingProperties.setRootImagesFolder(jpgPath.toFile().getAbsolutePath());
         UnitTestUtils.deleteSubDirectoriesInPath(jpgPath);
@@ -123,7 +123,7 @@ public class AlbumManagerImplTest {
     }
 
     @Test
-    public void addPhoto_hasChangedPhotos_updatesAlbumManifest_andReplacesPhotos() throws Exception {
+    void addPhoto_hasChangedPhotos_updatesAlbumManifest_andReplacesPhotos() throws Exception {
         Path rootTestImagePath = PathUtils.fromClasspath("actual-lego-photos-with-keywords-changed-md5-test");
         Path existingPath = rootTestImagePath.resolve(Paths.get("existing"));
         Path changedPath = rootTestImagePath.resolve(Paths.get("changed"));

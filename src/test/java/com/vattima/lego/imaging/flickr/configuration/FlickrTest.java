@@ -9,17 +9,17 @@ import com.flickr4java.flickr.auth.Permission;
 import com.flickr4java.flickr.photosets.Photosets;
 import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Paths;
 
 @Slf4j
-public class FlickrTest {
+class FlickrTest {
 
     @Test
-    @Ignore
-    public void flickr_photosets_getList() throws Exception {
+    @Disabled
+    void flickr_photosets_getList() throws Exception {
         FlickrProperties flickrProperties = new FlickrProperties();
         flickrProperties.setClientConfigDir(Paths.get("C:\\Users\\tvatt\\.credentials\\flickr.api"));
         flickrProperties.setClientConfigFile(Paths.get("flickr-client-api-keys.json"));

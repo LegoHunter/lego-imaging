@@ -8,41 +8,31 @@ import com.vattima.lego.imaging.api.bitly.BitlinksAPI;
 import com.vattima.lego.imaging.config.LegoImagingProperties;
 import com.vattima.lego.imaging.flickr.configuration.FlickrConfiguration;
 import com.vattima.lego.imaging.flickr.configuration.FlickrProperties;
-import com.vattima.lego.imaging.model.AlbumManifest;
-import com.vattima.lego.imaging.model.PhotoMetaData;
 import com.vattima.lego.imaging.service.bitly.BitlinksService;
-import com.vattima.lego.imaging.service.flickr.AlbumManagerImpl;
 import com.vattima.lego.imaging.service.flickr.ImageManagerImpl;
 import com.vattima.lego.imaging.test.MockFlickerIUploader;
 import com.vattima.lego.imaging.test.MockFlickerPhotosetsInterface;
-import com.vattima.lego.imaging.test.UnitTestUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.bricklink.data.lego.dao.BricklinkInventoryDao;
 import net.bricklink.data.lego.ibatis.configuration.IbatisConfiguration;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.ResourceUtils;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Optional;
-
-@RunWith(SpringRunner.class)
+@SpringBootTest
 @Slf4j
 @TestPropertySource(locations = "classpath:application.yml")
-@ContextConfiguration(classes = {TestApplication.class, BricklinkInventoryDao.class, FlickrConfiguration.class, IbatisConfiguration.class, PhotoServiceUploadManagerImplTest.TestConfig.class}, initializers = ConfigFileApplicationContextInitializer.class)
-public class PhotoServiceUploadManagerImplTest {
+@ContextConfiguration(classes = {PhotoServiceUploadManagerImplTest.TestConfig.class, TestApplication.class, BricklinkInventoryDao.class, FlickrConfiguration.class, IbatisConfiguration.class, PhotoServiceUploadManagerImplTest.TestConfig.class}, initializers = ConfigFileApplicationContextInitializer.class)
+class PhotoServiceUploadManagerImplTest {
 
     @Autowired
     FlickrProperties flickrProperties;
@@ -65,7 +55,7 @@ public class PhotoServiceUploadManagerImplTest {
     private ImageManager imageManager;
     private AlbumManager albumManager;
 
-    @Before
+    @BeforeEach
     public void setup() {
         legoImagingProperties = new LegoImagingProperties();
         legoImagingProperties.setKeywordsKeyName("Keywords:");
@@ -73,23 +63,24 @@ public class PhotoServiceUploadManagerImplTest {
     }
 
     @Test
-    public void dummy() {
+    void dummy() {
         BitlinksService bitlinksService = new BitlinksService(bitlinksAPI);
         PhotoServiceUploadManagerImpl photoServiceUploadManager = new PhotoServiceUploadManagerImpl(photosetsInterface, uploader, legoImagingProperties, albumManager, bitlinksService);
     }
 
-    @Configuration
+    @TestConfiguration
     static class TestConfig {
 
         @Primary
         @Bean
-        public IUploader uploader() {
+        public IUploader testUploader() {
             return new MockFlickerIUploader();
 
         }
+
         @Primary
         @Bean
-        public PhotosetsInterface photosetsInterface(FlickrProperties.Secrets flickrSecrets, Transport flickrTransport) {
+        public PhotosetsInterface testPhotosetsInterface(FlickrProperties.Secrets flickrSecrets, Transport flickrTransport) {
             return new MockFlickerPhotosetsInterface(flickrSecrets.getKey(), flickrSecrets.getSecret(), flickrTransport);
         }
     }

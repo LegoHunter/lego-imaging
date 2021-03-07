@@ -3,7 +3,7 @@ package com.vattima.lego.imaging.service;
 import com.vattima.lego.imaging.LegoImagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URL;
@@ -14,9 +14,9 @@ import java.util.stream.Stream;
 import static java.nio.file.FileVisitResult.CONTINUE;
 
 @Slf4j
-public class ImageScalingServiceTest {
+class ImageScalingServiceTest {
     @Test
-    public void scale() throws Exception {
+    void scale() throws Exception {
         try {
             ImageScalingService imageScalingService = new ImageScalingService();
             Stream.Builder<Path> builder = Stream.builder();
@@ -33,7 +33,7 @@ public class ImageScalingServiceTest {
     }
 
     @Test
-    public void scale_downloadsURL_returnsTempFile() throws Exception {
+    void scale_downloadsURL_returnsTempFile() throws Exception {
         ImageScalingService imageScalingService = new ImageScalingService();
         Path path = imageScalingService.scale(new URL("https://farm66.static.flickr.com/65535/49417636867_c433dc6ab2_c.jpg"));
         System.out.println(path);

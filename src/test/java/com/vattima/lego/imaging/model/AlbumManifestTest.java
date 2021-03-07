@@ -2,9 +2,7 @@ package com.vattima.lego.imaging.model;
 
 import com.vattima.lego.imaging.LegoImagingException;
 import org.assertj.core.util.Files;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -15,18 +13,10 @@ import java.time.LocalDateTime;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class AlbumManifestTest {
-
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    @After
-    public void tearDown() throws Exception {
-    }
+class AlbumManifestTest {
 
     @Test
-    public void getPrimaryPhoto_whenMultiplePhotosWithOnePrimary_returnsOne() {
+    void getPrimaryPhoto_whenMultiplePhotosWithOnePrimary_returnsOne() {
         AlbumManifest albumManifest = new AlbumManifest();
         PhotoMetaData pmd1 = new PhotoMetaData(Paths.get("a.jpg"));
         pmd1.setPhotoId("1");
@@ -53,7 +43,7 @@ public class AlbumManifestTest {
     }
 
     @Test
-    public void getPrimaryPhoto_whenMultiplePhotosWithZeroPrimary_returnsFirstPhoto() {
+    void getPrimaryPhoto_whenMultiplePhotosWithZeroPrimary_returnsFirstPhoto() {
         AlbumManifest albumManifest = new AlbumManifest();
         PhotoMetaData pmd1 = new PhotoMetaData(Paths.get("a.jpg"));
         pmd1.setPhotoId("1");
@@ -79,15 +69,15 @@ public class AlbumManifestTest {
     }
 
     @Test
-    public void getPrimaryPhoto_whenZeroPhotos() {
+    void getPrimaryPhoto_whenZeroPhotos() {
         AlbumManifest albumManifest = new AlbumManifest();
         assertThatThrownBy(albumManifest::getPrimaryPhoto).isInstanceOf(LegoImagingException.class)
-                                                          .hasMessage("No photos exist from which to select a primary photo");
+                                                          .hasMessageStartingWith("No photos exist from which to select a primary photo");
         assertThat(albumManifest.hasPrimaryPhoto()).isFalse();
     }
 
     @Test
-    public void fromJson_asString() {
+    void fromJson_asString() {
         String json = "{\"AlbumManifest\":{\"photosetId\":\"1982736941923\",\"title\":\"The title\",\"description\":\"The description\",\"url\":\"https://www.bogus.com/photoset/1982736941923\",\"uuid\":\"fdaa0638814727a42f005656f38b92c6\",\"blItemNumber\":\"1234-1\",\"photos\":[{\"path\":\".\",\"filename\":\"DSC_0001.jpg\",\"md5\":\"ABC123\",\"photoId\":\"01982395801283923\",\"uploadReturnCode\":0,\"uploadedTimeStamp\":\"2019-03-30T16:15:23.125\",\"primary\":true},{\"path\":\".\",\"filename\":\"DSC_0002.jpg\",\"md5\":\"XYZ987\",\"photoId\":\"232403948702304723\",\"uploadReturnCode\":0,\"uploadedTimeStamp\":\"2019-03-30T16:15:23.131\",\"primary\":false},{\"path\":\".\",\"filename\":\"DSC_0003.jpg\",\"md5\":\"JKL456\",\"photoId\":\"209384702342873\",\"uploadReturnCode\":0,\"uploadedTimeStamp\":\"2019-03-30T16:15:23.131\",\"primary\":false}],\"new\":true}}";
         AlbumManifest albumManifest = AlbumManifest.fromJson(json);
         assertThat(albumManifest.getTitle()).isEqualTo("The title");
@@ -98,7 +88,7 @@ public class AlbumManifestTest {
     }
 
     @Test
-    public void fromJson_withNonExistentFile_returnsNewEmptyAlbumManifest() {
+    void fromJson_withNonExistentFile_returnsNewEmptyAlbumManifest() {
         AlbumManifest albumManifest = AlbumManifest.fromJson(Paths.get("bogus-xxxxxxx"));
 
         assertThatThrownBy(albumManifest::getTitle).isInstanceOf(LegoImagingException.class).hasMessageContaining("No");
@@ -107,12 +97,12 @@ public class AlbumManifestTest {
         assertThat(albumManifest.isNew()).isTrue();
         assertThat(albumManifest.getPhotos()).hasSize(0);
         assertThatThrownBy(albumManifest::getPrimaryPhoto).isInstanceOf(LegoImagingException.class)
-                                                          .hasMessage("No photos exist from which to select a primary photo");
+                                                          .hasMessageStartingWith("No photos exist from which to select a primary photo");
 
     }
 
     @Test
-    public void toAndFromJson() {
+    void toAndFromJson() {
         AlbumManifest outputAlbumManifest = new AlbumManifest();
         outputAlbumManifest.setTitle("The title");
         outputAlbumManifest.setDescription("The description");

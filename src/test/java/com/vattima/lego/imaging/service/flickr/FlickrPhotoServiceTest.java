@@ -1,21 +1,11 @@
 package com.vattima.lego.imaging.service.flickr;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class FlickrPhotoServiceTest {
-
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    @After
-    public void tearDown() throws Exception {
-    }
+class FlickrPhotoServiceTest {
 
     @Test
-    public void createAlbum() {
+    void createAlbum() {
 //        FlickrPhotoService flickrPhotoService = new FlickrPhotoService();
 //        AlbumManifest albumManifest = new AlbumManifest();
 //        CreatePhotoSetRequest request = new CreatePhotoSetRequest(albumManifest);
@@ -25,30 +15,30 @@ public class FlickrPhotoServiceTest {
     }
 
     @Test
-    public void updateAlbum() {
+    void updateAlbum() {
     }
 
     @Test
-    public void addPhotoToAlbum() {
+    void addPhotoToAlbum() {
     }
 
     @Test
-    public void uploadAllAlbumPhotos() {
+    void uploadAllAlbumPhotos() {
     }
 
     @Test
-    public void photoIsUpdated() {
+    void photoIsUpdated() {
     }
 
     @Test
-    public void loadAlbumManifest() {
+    void loadAlbumManifest() {
     }
 
     @Test
-    public void saveAlbumManifest() {
+    void saveAlbumManifest() {
     }
 
     @Test
-    public void getAlbumPhotoMetaData() {
+    void getAlbumPhotoMetaData() {
     }
 }
