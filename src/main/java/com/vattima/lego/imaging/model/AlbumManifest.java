@@ -18,7 +18,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -65,7 +64,7 @@ public class AlbumManifest {
             if (photos.size() > 0) {
                 return photos.get(0);
             } else {
-                throw new LegoImagingException(String.format("No photos exist from which to select a primary photo for bricklink item number [%s], uuid [%s]", blItemNumber, uuid));
+                throw new LegoImagingException("No photos exist from which to select a primary photo for bricklink item number [%s], uuid [%s]".formatted(blItemNumber, uuid));
             }
         });
     }
@@ -189,7 +188,7 @@ public class AlbumManifest {
     }
 
     public void updateFromBricklinkInventory(BricklinkInventory bricklinkInventory) {
-        setTitle(String.format("%s - %s", bricklinkInventory.getBlItemNo(), bricklinkInventory.getItemName()));
+        setTitle("%s - %s".formatted(bricklinkInventory.getBlItemNo(), bricklinkInventory.getItemName()));
         setDescription(bricklinkInventory.getUuid());
     }
 }

@@ -65,7 +65,7 @@ public class ImageManagerImpl implements ImageManager {
                                     Optional<MetaDataExtractor> extractor = extractors().filter(e -> e.filter()
                                                                                                       .test(mdi, e))
                                                                                         .findFirst();
-                                    if (!extractor.isPresent()) {
+                                    if (extractor.isEmpty()) {
                                         return Stream.empty();
                                     }
                                     MetaDataExtractor e = extractor.get();
