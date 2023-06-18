@@ -19,11 +19,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -31,7 +29,7 @@ import org.springframework.test.context.TestPropertySource;
 @SpringBootTest
 @Slf4j
 @TestPropertySource(locations = "classpath:application.yml")
-@ContextConfiguration(classes = {PhotoServiceUploadManagerImplTest.TestConfig.class, TestApplication.class, BricklinkInventoryDao.class, FlickrConfiguration.class, IbatisConfiguration.class, PhotoServiceUploadManagerImplTest.TestConfig.class}, initializers = ConfigFileApplicationContextInitializer.class)
+@ContextConfiguration(classes = {PhotoServiceUploadManagerImplTest.TestConfig.class, TestApplication.class, BricklinkInventoryDao.class, FlickrConfiguration.class, IbatisConfiguration.class, PhotoServiceUploadManagerImplTest.TestConfig.class})
 class PhotoServiceUploadManagerImplTest {
 
     @Autowired
@@ -56,7 +54,7 @@ class PhotoServiceUploadManagerImplTest {
     private AlbumManager albumManager;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         legoImagingProperties = new LegoImagingProperties();
         legoImagingProperties.setKeywordsKeyName("Keywords:");
         imageManager = new ImageManagerImpl();

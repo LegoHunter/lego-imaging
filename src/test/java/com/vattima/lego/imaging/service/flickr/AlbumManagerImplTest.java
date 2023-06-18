@@ -35,7 +35,7 @@ class AlbumManagerImplTest {
     private PhotoServiceUploadManager photoServiceUploadManager;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         flickrProperties = new FlickrProperties();
         legoImagingProperties = new LegoImagingProperties();
         legoImagingProperties.setKeywordsKeyName("Keywords:");

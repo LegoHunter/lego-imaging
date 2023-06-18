@@ -75,7 +75,7 @@ public class BitlyConfiguration {
         private String headerValue;
 
         public OAuthRequestInterceptor(String accessToken) {
-            this.headerValue = String.format("Bearer %s", accessToken);
+            this.headerValue = "Bearer %s".formatted(accessToken);
         }
 
         @Override
@@ -104,7 +104,7 @@ public class BitlyConfiguration {
                             })
                             .get();
             log.error("BitlyError Error [{}]", bitlyError);
-            return new BitlyException(bitlyError, String.format("%d - %s", response.status(), response.reason()));
+            return new BitlyException(bitlyError, "%d - %s".formatted(response.status(), response.reason()));
         }
     }
 }
