@@ -118,7 +118,7 @@ public class PhotoServiceUploadManagerImpl implements PhotoServiceUploadManager 
                 photosetsInterface.editPhotos(a.getPhotosetId(), primaryPhotoId, a.getPhotoIdsArray());
                 log.info("Updated PhotosetId [{}] with primary photo id [{}] - added photos {}", photosetId, primaryPhoto.getPhotoId(), a.getPhotoIdsArray());
             } catch (FlickrException e) {
-                throw new LegoImagingException(e);
+                log.error(e.getMessage(), e);
             }
             AlbumManifest.toJson(a.getAlbumManifestFile(root), a);
         });
