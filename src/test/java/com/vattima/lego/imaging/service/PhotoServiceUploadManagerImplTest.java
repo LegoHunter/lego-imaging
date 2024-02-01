@@ -14,7 +14,7 @@ import com.vattima.lego.imaging.test.MockFlickerIUploader;
 import com.vattima.lego.imaging.test.MockFlickerPhotosetsInterface;
 import lombok.extern.slf4j.Slf4j;
 import net.bricklink.data.lego.dao.BricklinkInventoryDao;
-import net.bricklink.data.lego.ibatis.configuration.IbatisConfiguration;
+import net.bricklink.data.lego.ibatis.configuration.MybatisConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -29,7 +29,7 @@ import org.springframework.test.context.TestPropertySource;
 @SpringBootTest
 @Slf4j
 @TestPropertySource(locations = "classpath:application.yml")
-@ContextConfiguration(classes = {PhotoServiceUploadManagerImplTest.TestConfig.class, TestApplication.class, BricklinkInventoryDao.class, FlickrConfiguration.class, IbatisConfiguration.class, PhotoServiceUploadManagerImplTest.TestConfig.class})
+@ContextConfiguration(classes = {PhotoServiceUploadManagerImplTest.TestConfig.class, TestApplication.class, BricklinkInventoryDao.class, FlickrConfiguration.class, MybatisConfiguration.class, PhotoServiceUploadManagerImplTest.TestConfig.class})
 class PhotoServiceUploadManagerImplTest {
 
     @Autowired
