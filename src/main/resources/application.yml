@@ -53,8 +53,8 @@ lego:
       #workbook: By BOX, by NUMBER
       range: A2:F
    imaging:
-      root-images-folder: C:/Users/tvatt/Desktop/lego-collection-photos
-      root-inventory-items-folder: C:/Users/tvatt/Desktop/lego-collection-photos
+      root-images-folder: D:/data/lego/lego-collection-photos
+      root-inventory-items-folder: D:/data/lego/lego-collection-photos
       keywords-key-name: "Keywords:"
 
 flickr:
