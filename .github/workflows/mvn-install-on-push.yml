@@ -1,5 +1,5 @@
-name: feature branch :: mvn verify
-run-name: feature branch :: mvn verify
+name: 'feature branch :: mvn verify'
+run-name: 'feature branch :: mvn verify'
 on:
   push:
     branches:
