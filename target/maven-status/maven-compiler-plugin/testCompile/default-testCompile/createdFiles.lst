@@ -1,0 +1,14 @@
+com\vattima\lego\imaging\service\ImageScalingServiceTest$JpgFileVisitor.class
+com\vattima\lego\imaging\test\UnitTestUtils.class
+com\vattima\lego\imaging\service\ImageScalingServiceTest.class
+com\vattima\lego\imaging\service\flickr\FlickrPhotoServiceTest.class
+com\vattima\lego\imaging\service\PhotoServiceUploadManagerImplTest$TestConfig.class
+com\vattima\lego\imaging\test\MockFlickerPhotosetsInterface.class
+com\vattima\lego\imaging\model\AlbumManifestTest.class
+com\vattima\lego\imaging\service\flickr\AlbumManagerImplTest.class
+com\vattima\lego\imaging\service\PhotoServiceUploadManagerImplTest.class
+com\vattima\lego\imaging\flickr\configuration\FlickrTest.class
+com\vattima\lego\imaging\model\PhotoMetaDataTest.class
+com\vattima\lego\imaging\service\flickr\ImageManagerImplTest.class
+com\vattima\lego\imaging\TestApplication.class
+com\vattima\lego\imaging\test\MockFlickerIUploader.class
