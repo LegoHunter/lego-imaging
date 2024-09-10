@@ -114,6 +114,9 @@ class AlbumManagerImplTest {
         AlbumManifest emptyAlbumManifest = albumManager.getAlbumManifest("bogus", "1234-1");
         assertThat(emptyAlbumManifest).isNotNull();
 
+        Path p = jpgPath.resolve("DSC_0505.jpg");
+        log.info("path [{}] exists {}", p, Files.exists(p));
+
         PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0505.jpg"));
         Optional<AlbumManifest> albumManifest1 = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest1).isNotEmpty();
