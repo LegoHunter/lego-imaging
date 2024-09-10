@@ -94,41 +94,14 @@ class AlbumManagerImplTest {
         Resource resource = new ClassPathResource("actual-lego-photos-with-keywords-cache-test");
         Path jpgPath = Paths.get(resource.getFile().toURI());
 
-
-        PrintFiles pf = new PrintFiles();
-        Files.walkFileTree(jpgPath, pf);
-
-        System.out.println("=================================================================================================================");
-
-//        Path jpgPath = PathUtils.fromClasspath("actual-lego-photos-with-keywords-cache-test");
-
-        log.info("jpgPath = {} exists {}", jpgPath, Files.exists(jpgPath));
-        Path p2 = jpgPath.resolve("DSC_0505.JPG");
-        log.info("jpgPath = {} exists {}", p2, Files.exists(p2));
-
         legoImagingProperties.setRootImagesFolder(jpgPath.toFile().getPath());
         UnitTestUtils.deleteSubDirectoriesInPath(jpgPath);
 
-        System.out.println("=================================================================================================================");
-        Files.walkFileTree(jpgPath, pf);
-
-        Path p = jpgPath.resolve("DSC_0505.JPG");
-        log.info("(1) path [{}] exists {}", p, Files.exists(p));
-
         when(bricklinkInventoryDao.getByUuid(any(String.class))).thenReturn(new BricklinkInventory());
-
-        p = jpgPath.resolve("DSC_0505.JPG");
-        log.info("(2) path [{}] exists {}", p, Files.exists(p));
 
         AlbumManifest emptyAlbumManifest = albumManager.getAlbumManifest("bogus", "1234-1");
 
-        p = jpgPath.resolve("DSC_0505.JPG");
-        log.info("(3) path [{}] exists {}", p, Files.exists(p));
-
         assertThat(emptyAlbumManifest).isNotNull();
-
-        p = jpgPath.resolve("DSC_0505.JPG");
-        log.info("(4) path [{}] exists {}", p, Files.exists(p));
 
         PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0505.JPG"));
         Optional<AlbumManifest> albumManifest1 = albumManager.addPhoto(photoMetaData);
@@ -205,43 +178,5 @@ class AlbumManagerImplTest {
                  photoMetaData.map(p -> assertThat(p).isIn(photos))
                               .orElseGet(() -> fail("Filename [" + pmd.getPath() + "] should have been found in AlbumManifest"));
              });
-    }
-
-    private static class PrintFiles extends SimpleFileVisitor<Path> {
-
-        // Print information about
-        // each type of file.
-        @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attr) {
-            if (attr.isSymbolicLink()) {
-                System.out.format("Symbolic link: %s - exists [%s]", file, Files.exists(file));
-            } else if (attr.isRegularFile()) {
-                System.out.format("Regular file: %s - exists [%s]", file, Files.exists(file));
-            } else {
-                System.out.format("Other: %s - exists [%s]", file, Files.exists(file));
-            }
-            System.out.println("(" + attr.size() + "bytes)");
-            return CONTINUE;
-        }
-
-        // Print each directory visited.
-        @Override
-        public FileVisitResult postVisitDirectory(Path dir,
-                                                  IOException exc) {
-            System.out.format("Directory: %s%n", dir);
-            return CONTINUE;
-        }
-
-        // If there is some error accessing
-        // the file, let the user know.
-        // If you don't override this method
-        // and an error occurs, an IOException
-        // is thrown.
-        @Override
-        public FileVisitResult visitFileFailed(Path file,
-                                               IOException exc) {
-            System.err.println("ERROR :: [%s]".formatted(exc.getMessage()));
-            return CONTINUE;
-        }
     }
 }
