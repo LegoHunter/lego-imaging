@@ -201,11 +201,11 @@ class AlbumManagerImplTest {
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attr) {
             if (attr.isSymbolicLink()) {
-                System.out.format("Symbolic link: %s ", file);
+                System.out.format("Symbolic link: %s - exists [%s]", file, Files.exists(file));
             } else if (attr.isRegularFile()) {
-                System.out.format("Regular file: %s ", file);
+                System.out.format("Regular file: %s - exists [%s]", file, Files.exists(file));
             } else {
-                System.out.format("Other: %s ", file);
+                System.out.format("Other: %s - exists [%s]", file, Files.exists(file));
             }
             System.out.println("(" + attr.size() + "bytes)");
             return CONTINUE;
@@ -227,7 +227,7 @@ class AlbumManagerImplTest {
         @Override
         public FileVisitResult visitFileFailed(Path file,
                                                IOException exc) {
-            System.err.println(exc);
+            System.err.println("ERROR :: [%s]".formatted(exc.getMessage()));
             return CONTINUE;
         }
     }
