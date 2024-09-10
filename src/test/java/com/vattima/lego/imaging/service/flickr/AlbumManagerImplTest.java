@@ -9,6 +9,7 @@ import com.vattima.lego.imaging.service.ImageManager;
 import com.vattima.lego.imaging.service.PhotoServiceUploadManager;
 import com.vattima.lego.imaging.test.UnitTestUtils;
 import com.vattima.lego.imaging.util.PathUtils;
+import lombok.extern.slf4j.Slf4j;
 import net.bricklink.data.lego.dao.BricklinkInventoryDao;
 import net.bricklink.data.lego.dto.BricklinkInventory;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +29,7 @@ import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@Slf4j
 class AlbumManagerImplTest {
     private LegoImagingProperties legoImagingProperties;
     private ImageManager imageManager;
@@ -92,7 +94,9 @@ class AlbumManagerImplTest {
         Path jpgPath = Paths.get(resource.getFile().toURI());
 
 //        Path jpgPath = PathUtils.fromClasspath("actual-lego-photos-with-keywords-cache-test");
-        legoImagingProperties.setRootImagesFolder(jpgPath.toFile().getAbsolutePath());
+
+        log.info("jpgPath = {}", jpgPath);
+        legoImagingProperties.setRootImagesFolder(jpgPath.toFile().getPath());
         UnitTestUtils.deleteSubDirectoriesInPath(jpgPath);
 
         when(bricklinkInventoryDao.getByUuid(any(String.class))).thenReturn(new BricklinkInventory());
