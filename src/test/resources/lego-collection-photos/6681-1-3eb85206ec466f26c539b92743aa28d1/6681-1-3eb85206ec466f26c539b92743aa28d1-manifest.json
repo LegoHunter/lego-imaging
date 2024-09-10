@@ -1,0 +1,94 @@
+{
+  "AlbumManifest" : {
+    "photosetId" : "72157709437946461",
+    "title" : "6681-1 - Police Van",
+    "description" : "3eb85206ec466f26c539b92743aa28d1",
+    "url" : "https://www.flickr.com/photos/144144385@N08/sets/72157709437946461/",
+    "shortUrl" : "http://bit.ly/308N2n9",
+    "uuid" : "3eb85206ec466f26c539b92743aa28d1",
+    "blItemNumber" : "6681-1",
+    "photos" : [ {
+      "path" : "file:///D:/data/lego/lego-collection-photos/6681-1-3eb85206ec466f26c539b92743aa28d1",
+      "filename" : "DSC_1335.JPG",
+      "keywords" : {
+        "bc" : "vg",
+        "ic" : "e",
+        "bl" : "6681-1",
+        "uuid" : "3eb85206ec466f26c539b92743aa28d1",
+        "bo" : "true"
+      },
+      "md5" : "3A0CC0AF62A1A62226D5570766CDCDED",
+      "photoId" : "48201632582",
+      "uploadReturnCode" : 0,
+      "uploadedTimeStamp" : "2019-07-04T23:17:40.78",
+      "changed" : false,
+      "primary" : false
+    }, {
+      "path" : "file:///D:/data/lego/lego-collection-photos/6681-1-3eb85206ec466f26c539b92743aa28d1",
+      "filename" : "DSC_1336.JPG",
+      "keywords" : {
+        "bc" : "vg",
+        "ic" : "e",
+        "bl" : "6681-1",
+        "uuid" : "3eb85206ec466f26c539b92743aa28d1",
+        "bo" : "true"
+      },
+      "md5" : "2EBCD6FE86E9DAE953F2B3C86051BC1C",
+      "photoId" : "48201633227",
+      "uploadReturnCode" : 0,
+      "uploadedTimeStamp" : "2019-07-04T23:17:49.569",
+      "changed" : false,
+      "primary" : false
+    }, {
+      "path" : "file:///D:/data/lego/lego-collection-photos/6681-1-3eb85206ec466f26c539b92743aa28d1",
+      "filename" : "DSC_1337.JPG",
+      "keywords" : {
+        "bc" : "vg",
+        "ic" : "e",
+        "bl" : "6681-1",
+        "uuid" : "3eb85206ec466f26c539b92743aa28d1",
+        "bo" : "true"
+      },
+      "md5" : "69F4AF328E380470D5BC9F16A75ECB5C",
+      "photoId" : "48201633922",
+      "uploadReturnCode" : 0,
+      "uploadedTimeStamp" : "2019-07-04T23:17:55.711",
+      "changed" : false,
+      "primary" : false
+    }, {
+      "path" : "file:///D:/data/lego/lego-collection-photos/6681-1-3eb85206ec466f26c539b92743aa28d1",
+      "filename" : "DSC_1339.JPG",
+      "keywords" : {
+        "bc" : "vg",
+        "ic" : "e",
+        "bl" : "6681-1",
+        "uuid" : "3eb85206ec466f26c539b92743aa28d1",
+        "bo" : "true"
+      },
+      "md5" : "9CFA246E3B336E8EDC3BC174B4CD0ECE",
+      "photoId" : "48201587406",
+      "uploadReturnCode" : 0,
+      "uploadedTimeStamp" : "2019-07-04T23:18:00.227",
+      "changed" : false,
+      "primary" : false
+    }, {
+      "path" : "file:///D:/data/lego/lego-collection-photos/6681-1-3eb85206ec466f26c539b92743aa28d1",
+      "filename" : "DSC_1340.JPG",
+      "keywords" : {
+        "bc" : "vg",
+        "ic" : "e",
+        "bl" : "6681-1",
+        "uuid" : "3eb85206ec466f26c539b92743aa28d1",
+        "bo" : "true",
+        "primary" : "primary"
+      },
+      "md5" : "50D7B772A9BB40E769745626BECC685B",
+      "photoId" : "48201587801",
+      "uploadReturnCode" : 0,
+      "uploadedTimeStamp" : "2019-07-04T23:18:05.182",
+      "changed" : false,
+      "primary" : true
+    } ],
+    "new" : true
+  }
+}

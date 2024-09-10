@@ -9,23 +9,28 @@ import com.vattima.lego.imaging.service.ImageManager;
 import com.vattima.lego.imaging.service.PhotoServiceUploadManager;
 import com.vattima.lego.imaging.test.UnitTestUtils;
 import com.vattima.lego.imaging.util.PathUtils;
+import lombok.extern.slf4j.Slf4j;
 import net.bricklink.data.lego.dao.BricklinkInventoryDao;
 import net.bricklink.data.lego.dto.BricklinkInventory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.util.ResourceUtils;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.IOException;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static java.nio.file.FileVisitResult.CONTINUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@Slf4j
 class AlbumManagerImplTest {
     private LegoImagingProperties legoImagingProperties;
     private ImageManager imageManager;
@@ -61,7 +66,7 @@ class AlbumManagerImplTest {
 
         UnitTestUtils.deleteSubDirectoriesInPath(jpgPath);
 
-        PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0504.jpg"));
+        PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0504.JPG"));
         Optional<AlbumManifest> albumManifest = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest).isNotEmpty();
     }
@@ -71,8 +76,7 @@ class AlbumManagerImplTest {
     void addPhoto_withNoUuid_returnsNull() throws Exception {
         FlickrProperties flickrProperties = new FlickrProperties();
 
-        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:actual-lego-photos-with-keyword-issues")
-                                              .toURI());
+        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:actual-lego-photos-with-keyword-issues").toURI());
         legoImagingProperties.setRootImagesFolder(jpgPath.toFile()
                                                          .getAbsolutePath());
         bricklinkInventoryDao = mock(BricklinkInventoryDao.class);
@@ -80,23 +84,26 @@ class AlbumManagerImplTest {
         UnitTestUtils.deleteSubDirectoriesInPath(jpgPath);
 
         AlbumManager albumManager = new AlbumManagerImpl(imageManager, legoImagingProperties, bricklinkInventoryDao);
-        PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0504-missing-uuid.jpg"));
+        PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0504-missing-uuid.JPG"));
         Optional<AlbumManifest> albumManifest = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest).isEmpty();
     }
 
     @Test
     void addPhoto_inSameAlbum_returnsCachedAlbumManifest() throws Exception {
-        Path jpgPath = PathUtils.fromClasspath("actual-lego-photos-with-keywords-cache-test");
-        legoImagingProperties.setRootImagesFolder(jpgPath.toFile().getAbsolutePath());
+        Resource resource = new ClassPathResource("actual-lego-photos-with-keywords-cache-test");
+        Path jpgPath = Paths.get(resource.getFile().toURI());
+
+        legoImagingProperties.setRootImagesFolder(jpgPath.toFile().getPath());
         UnitTestUtils.deleteSubDirectoriesInPath(jpgPath);
 
         when(bricklinkInventoryDao.getByUuid(any(String.class))).thenReturn(new BricklinkInventory());
 
         AlbumManifest emptyAlbumManifest = albumManager.getAlbumManifest("bogus", "1234-1");
+
         assertThat(emptyAlbumManifest).isNotNull();
 
-        PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0505.jpg"));
+        PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0505.JPG"));
         Optional<AlbumManifest> albumManifest1 = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest1).isNotEmpty();
         String uuid = photoMetaData.getKeyword("uuid");
@@ -104,16 +111,16 @@ class AlbumManagerImplTest {
         assertThat(albumManifestWithUuid).isNotNull();
         assertThat(albumManifestWithUuid).isSameAs(albumManifest1.get());
 
-        photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0506.jpg"));
+        photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0506.JPG"));
         Optional<AlbumManifest> albumManifest2 = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest2.get()).isSameAs(albumManifest1.get());
 
-        photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0514.jpg"));
+        photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0514.JPG"));
         Optional<AlbumManifest> albumManifest3 = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest3).isNotEmpty();
         assertThat(albumManifest3.get()).isNotIn(albumManifest1, albumManifest2);
 
-        photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0515.jpg"));
+        photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0515.JPG"));
         Optional<AlbumManifest> albumManifest4 = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest4).isNotEmpty();
 
