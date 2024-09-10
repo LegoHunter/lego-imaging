@@ -1,5 +1,3 @@
-package com.vattima.lego.imaging.service;
-
 import com.flickr4java.flickr.Transport;
 import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import com.flickr4java.flickr.uploader.IUploader;
@@ -8,6 +6,9 @@ import com.vattima.lego.imaging.api.bitly.BitlinksAPI;
 import com.vattima.lego.imaging.config.LegoImagingProperties;
 import com.vattima.lego.imaging.flickr.configuration.FlickrConfiguration;
 import com.vattima.lego.imaging.flickr.configuration.FlickrProperties;
+import com.vattima.lego.imaging.service.AlbumManager;
+import com.vattima.lego.imaging.service.ImageManager;
+import com.vattima.lego.imaging.service.PhotoServiceUploadManagerImpl;
 import com.vattima.lego.imaging.service.bitly.BitlinksService;
 import com.vattima.lego.imaging.service.flickr.ImageManagerImpl;
 import com.vattima.lego.imaging.test.MockFlickerIUploader;
@@ -43,8 +44,6 @@ class PhotoServiceUploadManagerImplTest {
 
     @Autowired
     BricklinkInventoryDao bricklinkInventoryDao;
-
-    BitlinksService bitlinksService;
 
     @Mock
     BitlinksAPI bitlinksAPI;

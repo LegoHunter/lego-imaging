@@ -71,8 +71,7 @@ class AlbumManagerImplTest {
     void addPhoto_withNoUuid_returnsNull() throws Exception {
         FlickrProperties flickrProperties = new FlickrProperties();
 
-        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:actual-lego-photos-with-keyword-issues")
-                                              .toURI());
+        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:actual-lego-photos-with-keyword-issues").toURI());
         legoImagingProperties.setRootImagesFolder(jpgPath.toFile()
                                                          .getAbsolutePath());
         bricklinkInventoryDao = mock(BricklinkInventoryDao.class);
