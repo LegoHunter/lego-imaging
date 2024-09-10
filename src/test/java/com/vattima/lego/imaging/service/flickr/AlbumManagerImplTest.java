@@ -102,7 +102,8 @@ class AlbumManagerImplTest {
 
 //        Path jpgPath = PathUtils.fromClasspath("actual-lego-photos-with-keywords-cache-test");
 
-        log.info("jpgPath = {}", jpgPath);
+        log.info("jpgPath = {} exists {}", jpgPath, Files.exists(jpgPath));
+
         legoImagingProperties.setRootImagesFolder(jpgPath.toFile().getPath());
         UnitTestUtils.deleteSubDirectoriesInPath(jpgPath);
 
