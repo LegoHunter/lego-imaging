@@ -109,13 +109,23 @@ class AlbumManagerImplTest {
         System.out.println("=================================================================================================================");
         Files.walkFileTree(jpgPath, pf);
 
+        Path p = jpgPath.resolve("DSC_0505.jpg");
+        log.info("(1) path [{}] exists {}", p, Files.exists(p));
+
         when(bricklinkInventoryDao.getByUuid(any(String.class))).thenReturn(new BricklinkInventory());
 
+        p = jpgPath.resolve("DSC_0505.jpg");
+        log.info("(2) path [{}] exists {}", p, Files.exists(p));
+
         AlbumManifest emptyAlbumManifest = albumManager.getAlbumManifest("bogus", "1234-1");
+
+        p = jpgPath.resolve("DSC_0505.jpg");
+        log.info("(3) path [{}] exists {}", p, Files.exists(p));
+
         assertThat(emptyAlbumManifest).isNotNull();
 
-        Path p = jpgPath.resolve("DSC_0505.jpg");
-        log.info("path [{}] exists {}", p, Files.exists(p));
+        p = jpgPath.resolve("DSC_0505.jpg");
+        log.info("(4) path [{}] exists {}", p, Files.exists(p));
 
         PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0505.jpg"));
         Optional<AlbumManifest> albumManifest1 = albumManager.addPhoto(photoMetaData);
