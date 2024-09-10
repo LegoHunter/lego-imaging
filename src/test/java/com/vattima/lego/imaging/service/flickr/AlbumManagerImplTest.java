@@ -98,13 +98,16 @@ class AlbumManagerImplTest {
         PrintFiles pf = new PrintFiles();
         Files.walkFileTree(jpgPath, pf);
 
-
+        System.out.println("=================================================================================================================");
 
 //        Path jpgPath = PathUtils.fromClasspath("actual-lego-photos-with-keywords-cache-test");
 
         log.info("jpgPath = {}", jpgPath);
         legoImagingProperties.setRootImagesFolder(jpgPath.toFile().getPath());
         UnitTestUtils.deleteSubDirectoriesInPath(jpgPath);
+
+        System.out.println("=================================================================================================================");
+        Files.walkFileTree(jpgPath, pf);
 
         when(bricklinkInventoryDao.getByUuid(any(String.class))).thenReturn(new BricklinkInventory());
 
