@@ -13,6 +13,8 @@ import net.bricklink.data.lego.dao.BricklinkInventoryDao;
 import net.bricklink.data.lego.dto.BricklinkInventory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.util.ResourceUtils;
 
 import java.nio.file.Files;
@@ -86,7 +88,10 @@ class AlbumManagerImplTest {
 
     @Test
     void addPhoto_inSameAlbum_returnsCachedAlbumManifest() throws Exception {
-        Path jpgPath = PathUtils.fromClasspath("actual-lego-photos-with-keywords-cache-test");
+        Resource resource = new ClassPathResource("actual-lego-photos-with-keywords-cache-test");
+        Path jpgPath = Paths.get(resource.getFile().toURI());
+
+//        Path jpgPath = PathUtils.fromClasspath("actual-lego-photos-with-keywords-cache-test");
         legoImagingProperties.setRootImagesFolder(jpgPath.toFile().getAbsolutePath());
         UnitTestUtils.deleteSubDirectoriesInPath(jpgPath);
 
