@@ -45,6 +45,8 @@ class PhotoServiceUploadManagerImplTest {
     @Autowired
     BricklinkInventoryDao bricklinkInventoryDao;
 
+    BitlinksService bitlinksService;
+
     @Mock
     BitlinksAPI bitlinksAPI;
 
