@@ -95,7 +95,7 @@ class AlbumManagerImplTest {
         AlbumManifest emptyAlbumManifest = albumManager.getAlbumManifest("bogus", "1234-1");
         assertThat(emptyAlbumManifest).isNotNull();
 
-        PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0505.jpg"));
+        PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0505.JPG"));
         Optional<AlbumManifest> albumManifest1 = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest1).isNotEmpty();
         String uuid = photoMetaData.getKeyword("uuid");
@@ -103,16 +103,16 @@ class AlbumManagerImplTest {
         assertThat(albumManifestWithUuid).isNotNull();
         assertThat(albumManifestWithUuid).isSameAs(albumManifest1.get());
 
-        photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0506.jpg"));
+        photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0506.JPG"));
         Optional<AlbumManifest> albumManifest2 = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest2.get()).isSameAs(albumManifest1.get());
 
-        photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0514.jpg"));
+        photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0514.JPG"));
         Optional<AlbumManifest> albumManifest3 = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest3).isNotEmpty();
         assertThat(albumManifest3.get()).isNotIn(albumManifest1, albumManifest2);
 
-        photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0515.jpg"));
+        photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0515.JPG"));
         Optional<AlbumManifest> albumManifest4 = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest4).isNotEmpty();
 
