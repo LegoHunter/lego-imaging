@@ -8,6 +8,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,19 +23,19 @@ class AlbumManifestTest {
         pmd1.setPhotoId("1");
         pmd1.setPrimary(false);
         albumManifest.getPhotos()
-                     .add(pmd1);
+                .add(pmd1);
 
         PhotoMetaData pmd2 = new PhotoMetaData(Path.of("b.jpg"));
         pmd2.setPhotoId("2");
         pmd2.setPrimary(true);
         albumManifest.getPhotos()
-                     .add(pmd2);
+                .add(pmd2);
 
         PhotoMetaData pmd3 = new PhotoMetaData(Path.of("c.jpg"));
         pmd3.setPhotoId("3");
         pmd3.setPrimary(false);
         albumManifest.getPhotos()
-                     .add(pmd3);
+                .add(pmd3);
 
         PhotoMetaData primary = albumManifest.getPrimaryPhoto();
         assertThat(primary).isSameAs(pmd2);
@@ -49,19 +50,19 @@ class AlbumManifestTest {
         pmd1.setPhotoId("1");
         pmd1.setPrimary(false);
         albumManifest.getPhotos()
-                     .add(pmd1);
+                .add(pmd1);
 
         PhotoMetaData pmd2 = new PhotoMetaData(Path.of("b.jpg"));
         pmd2.setPhotoId("2");
         pmd2.setPrimary(false);
         albumManifest.getPhotos()
-                     .add(pmd2);
+                .add(pmd2);
 
         PhotoMetaData pmd3 = new PhotoMetaData(Path.of("c.jpg"));
         pmd3.setPhotoId("3");
         pmd3.setPrimary(false);
         albumManifest.getPhotos()
-                     .add(pmd3);
+                .add(pmd3);
 
         PhotoMetaData primary = albumManifest.getPrimaryPhoto();
         assertThat(primary).isSameAs(pmd1);
@@ -72,7 +73,7 @@ class AlbumManifestTest {
     void getPrimaryPhoto_whenZeroPhotos() {
         AlbumManifest albumManifest = new AlbumManifest();
         assertThatThrownBy(albumManifest::getPrimaryPhoto).isInstanceOf(LegoImagingException.class)
-                                                          .hasMessageStartingWith("No photos exist from which to select a primary photo");
+                .hasMessageStartingWith("No photos exist from which to select a primary photo");
         assertThat(albumManifest.hasPrimaryPhoto()).isFalse();
     }
 
@@ -97,7 +98,7 @@ class AlbumManifestTest {
         assertThat(albumManifest.isNew()).isTrue();
         assertThat(albumManifest.getPhotos()).hasSize(0);
         assertThatThrownBy(albumManifest::getPrimaryPhoto).isInstanceOf(LegoImagingException.class)
-                                                          .hasMessageStartingWith("No photos exist from which to select a primary photo");
+                .hasMessageStartingWith("No photos exist from which to select a primary photo");
 
     }
 
@@ -116,7 +117,7 @@ class AlbumManifestTest {
         }
         outputAlbumManifest.setUuid("fdaa0638814727a42f005656f38b92c6");
 
-        PhotoMetaData pmd = new PhotoMetaData(Path.of("c:\\temp\\a.jpg"));
+        PhotoMetaData pmd = new PhotoMetaData(Paths.get("a.jpg"));
         pmd.setPhotoId("01982395801283923");
         pmd.setPrimary(true);
         pmd.setMd5("ABC123");
@@ -124,7 +125,7 @@ class AlbumManifestTest {
         pmd.setUploadReturnCode(0);
         outputAlbumManifest.getPhotos().add(pmd);
 
-        pmd = new PhotoMetaData(Path.of("c:\\temp\\b.jpg"));
+        pmd = new PhotoMetaData(Paths.get("b.jpg"));
         pmd.setPhotoId("232403948702304723");
         pmd.setPrimary(false);
         pmd.setMd5("XYZ987");
@@ -132,7 +133,7 @@ class AlbumManifestTest {
         pmd.setUploadReturnCode(0);
         outputAlbumManifest.getPhotos().add(pmd);
 
-        pmd = new PhotoMetaData(Path.of("c:\\temp\\c.jpg"));
+        pmd = new PhotoMetaData(Paths.get("c.jpg"));
         pmd.setPhotoId("209384702342873");
         pmd.setPrimary(false);
         pmd.setMd5("JKL456");

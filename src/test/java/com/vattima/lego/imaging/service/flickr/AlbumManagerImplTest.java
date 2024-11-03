@@ -60,7 +60,7 @@ class AlbumManagerImplTest {
 
         UnitTestUtils.deleteSubDirectoriesInPath(jpgPath);
 
-        PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0504.jpg"));
+        PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0504.JPG"));
         Optional<AlbumManifest> albumManifest = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest).isNotEmpty();
     }
@@ -79,7 +79,7 @@ class AlbumManagerImplTest {
         UnitTestUtils.deleteSubDirectoriesInPath(jpgPath);
 
         AlbumManager albumManager = new AlbumManagerImpl(imageManager, legoImagingProperties, bricklinkInventoryDao);
-        PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0504-missing-uuid.jpg"));
+        PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0504-missing-uuid.JPG"));
         Optional<AlbumManifest> albumManifest = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest).isEmpty();
     }
