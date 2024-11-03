@@ -74,7 +74,7 @@ class ImageManagerImplTest {
     void getKeywords_withMultiWordKeyword_doesntSplitKeyword() throws Exception {
         Path jpgPath = PathUtils.fromClasspath("lego-photo-multi-word-keyword");
         ImageManagerImpl imageManager = new ImageManagerImpl();
-        DirectoryStream<Path> paths = Files.newDirectoryStream(jpgPath, "IMG_20191016_214600.jpg");
+        DirectoryStream<Path> paths = Files.newDirectoryStream(jpgPath, "IMG_20191016_214600.JPG");
         paths.forEach(p -> {
             try {
                 PhotoMetaData photoMetaData = new PhotoMetaData(p);
@@ -94,7 +94,7 @@ class ImageManagerImplTest {
     void getKeywords_withJpgFilesThatHaveKeywords_returnANonEmptyMap() throws Exception {
         Path jpgPath = PathUtils.fromClasspath("actual-lego-photos-with-keywords");
         ImageManagerImpl imageManager = new ImageManagerImpl();
-        DirectoryStream<Path> paths = Files.newDirectoryStream(jpgPath, "*.jpg");
+        DirectoryStream<Path> paths = Files.newDirectoryStream(jpgPath, "*.JPG");
         paths.forEach(p -> {
             try {
                 PhotoMetaData photoMetaData = new PhotoMetaData(p);

@@ -9,12 +9,13 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Slf4j
 public class ImageScalingService {
     public Path scale(URL url) {
         Path tempFile = null;
-        try {tempFile = java.nio.file.Files.createTempFile(Path.of(System.getenv("TMP")), "resized", ".jpg");
+        try {tempFile = java.nio.file.Files.createTempFile(Paths.get(System.getProperty("java.io.tmpdir")), "resized", ".jpg");
             BufferedImage image = ImageIO.read(url);
             ImageIO.write(image, "jpg", tempFile.toFile());
         } catch (IOException e) {
