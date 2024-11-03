@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -50,7 +49,7 @@ class FilePhotoSourceTest {
         Path targetAbsolutePath = PathUtils.fromClasspath("", "photo-target-directory");
         PhotoSource movedFilePhotoSource = filePhotoSource.move(targetAbsolutePath.toUri());
         URI targetUri = movedFilePhotoSource.uri();
-        Path targetPath = Paths.get(targetUri);
+        Path targetPath = Path.of(targetUri);
 
         assertThat(targetPath).isEqualTo(targetAbsolutePath);
     }

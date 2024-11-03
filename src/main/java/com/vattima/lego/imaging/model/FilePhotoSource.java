@@ -7,7 +7,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -36,7 +39,7 @@ public class FilePhotoSource implements PhotoSource {
 
     @Override
     public PhotoSource move(URI uri) throws IOException {
-        Path targetDirectory = Paths.get(uri);
+        Path targetDirectory = Path.of(uri);
         if (!Files.exists(targetDirectory, LinkOption.NOFOLLOW_LINKS)) {
             Files.createDirectory(targetDirectory);
             log.debug("Created directory path [{}]", targetDirectory);

@@ -9,13 +9,12 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Slf4j
 public class ImageScalingService {
     public Path scale(URL url) {
         Path tempFile = null;
-        try {tempFile = java.nio.file.Files.createTempFile(Paths.get(System.getenv("TMP")), "resized", ".jpg");
+        try {tempFile = java.nio.file.Files.createTempFile(Path.of(System.getenv("TMP")), "resized", ".jpg");
             BufferedImage image = ImageIO.read(url);
             ImageIO.write(image, "jpg", tempFile.toFile());
         } catch (IOException e) {
@@ -33,7 +32,7 @@ public class ImageScalingService {
         BufferedOutputStream bos = null;
         double scaleFactor = 1.0d;
         try {
-            tempFile = java.nio.file.Files.createTempFile(Paths.get(System.getenv("TMP")), "resized-" + path.getFileName(), ".jpg");
+            tempFile = java.nio.file.Files.createTempFile(Path.of(System.getenv("TMP")), "resized-" + path.getFileName(), ".jpg");
 
             InputStream fis = new FileInputStream(path.toFile());
             bis = new BufferedInputStream(fis, 1024*16);
@@ -86,7 +85,7 @@ public class ImageScalingService {
         BufferedInputStream bis = null;
         BufferedOutputStream bos = null;
         try {
-            tempFile = java.nio.file.Files.createTempFile(Paths.get("C:\\temp"), "resized-" + path.getFileName(), ".jpg");
+            tempFile = java.nio.file.Files.createTempFile(Path.of("C:\\temp"), "resized-" + path.getFileName(), ".jpg");
 
             InputStream fis = new FileInputStream(path.toFile());
             bis = new BufferedInputStream(fis, 1024*16);

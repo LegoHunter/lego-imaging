@@ -6,7 +6,6 @@ import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Setter
 @Getter
@@ -17,6 +16,6 @@ public class LegoImagingProperties {
     private String keywordsKeyName;
 
     public Path getRootImagesPath() {
-        return Paths.get(rootImagesFolder);
+        return Path.of(rootImagesFolder);
     }
 }

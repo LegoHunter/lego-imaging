@@ -20,7 +20,7 @@ class ImageScalingServiceTest {
         try {
             ImageScalingService imageScalingService = new ImageScalingService();
             Stream.Builder<Path> builder = Stream.builder();
-            Files.walkFileTree(Paths.get("D:\\data\\lego\\lego-collection-photos"), new JpgFileVisitor(builder));
+            Files.walkFileTree(Path.of("D:\\data\\lego\\lego-collection-photos"), new JpgFileVisitor(builder));
             Stream<Path> paths = builder.build();
             paths.limit(10).forEach(p -> {
                 log.info("path [{}]", p);

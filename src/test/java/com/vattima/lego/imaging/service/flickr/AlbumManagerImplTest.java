@@ -17,7 +17,6 @@ import org.springframework.util.ResourceUtils;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -71,7 +70,7 @@ class AlbumManagerImplTest {
     void addPhoto_withNoUuid_returnsNull() throws Exception {
         FlickrProperties flickrProperties = new FlickrProperties();
 
-        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:actual-lego-photos-with-keyword-issues")
+        Path jpgPath = Path.of(ResourceUtils.getURL("classpath:actual-lego-photos-with-keyword-issues")
                                               .toURI());
         legoImagingProperties.setRootImagesFolder(jpgPath.toFile()
                                                          .getAbsolutePath());
@@ -125,8 +124,8 @@ class AlbumManagerImplTest {
     @Test
     void addPhoto_hasChangedPhotos_updatesAlbumManifest_andReplacesPhotos() throws Exception {
         Path rootTestImagePath = PathUtils.fromClasspath("actual-lego-photos-with-keywords-changed-md5-test");
-        Path existingPath = rootTestImagePath.resolve(Paths.get("existing"));
-        Path changedPath = rootTestImagePath.resolve(Paths.get("changed"));
+        Path existingPath = rootTestImagePath.resolve(Path.of("existing"));
+        Path changedPath = rootTestImagePath.resolve(Path.of("changed"));
 
         UnitTestUtils.deleteSubDirectoriesInPath(existingPath);
         legoImagingProperties.setRootImagesFolder(existingPath.toFile()
@@ -134,7 +133,7 @@ class AlbumManagerImplTest {
         when(bricklinkInventoryDao.getByUuid(any(String.class))).thenReturn(new BricklinkInventory());
 
         Set<AlbumManifest> albumManifests = new HashSet<>();
-        Files.walk(Paths.get(legoImagingProperties.getRootImagesFolder()))
+        Files.walk(Path.of(legoImagingProperties.getRootImagesFolder()))
              .filter(p -> p.getFileName()
                            .toString()
                            .endsWith(".JPG"))
