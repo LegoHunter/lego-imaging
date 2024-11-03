@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Configuration;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -50,7 +49,7 @@ public class FlickrProperties {
         Optional<Path> optionalDir = Optional.ofNullable(getClientConfigDir());
         Optional<Path> optionalFile = Optional.ofNullable(getClientConfigFile());
         if ((optionalDir.isPresent()) && (optionalFile.isPresent())) {
-            Path jsonConfigFile = Paths.get(clientConfigDir.toString(), clientConfigFile.toString());
+            Path jsonConfigFile = Path.of(clientConfigDir.toString(), clientConfigFile.toString());
             if (Files.exists(jsonConfigFile)) {
                 ObjectMapper mapper = new ObjectMapper();
                 mapper.enable(SerializationFeature.WRAP_ROOT_VALUE);

@@ -128,7 +128,7 @@ public class AlbumManagerImpl implements AlbumManager {
     public Optional<AlbumManifest> movePhoto(PhotoMetaData photoMetaData) {
         Optional<AlbumManifest> albumManifest = Optional.ofNullable(albums.get(photoMetaData.getKeyword("uuid")));
         albumManifest.ifPresent(a -> {
-            Path targetPath = a.getAlbumManifestPath(Paths.get(legoImagingProperties.getRootImagesFolder()));
+            Path targetPath = a.getAlbumManifestPath(Path.of(legoImagingProperties.getRootImagesFolder()));
             photoMetaData.move(targetPath);
         });
         return albumManifest;

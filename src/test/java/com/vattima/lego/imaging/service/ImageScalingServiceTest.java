@@ -1,7 +1,6 @@
 package com.vattima.lego.imaging.service;
 
 import com.vattima.lego.imaging.LegoImagingException;
-import com.vattima.lego.imaging.util.PathUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -21,8 +20,7 @@ class ImageScalingServiceTest {
         try {
             ImageScalingService imageScalingService = new ImageScalingService();
             Stream.Builder<Path> builder = Stream.builder();
-
-            Files.walkFileTree(PathUtils.fromClasspath("lego-collection-photos"), new JpgFileVisitor(builder));
+            Files.walkFileTree(Path.of("D:\\data\\lego\\lego-collection-photos"), new JpgFileVisitor(builder));
             Stream<Path> paths = builder.build();
             paths.limit(10).forEach(p -> {
                 log.info("path [{}]", p);

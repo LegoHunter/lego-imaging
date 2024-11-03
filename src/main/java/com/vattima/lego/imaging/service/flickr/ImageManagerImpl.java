@@ -3,7 +3,6 @@ package com.vattima.lego.imaging.service.flickr;
 import com.vattima.lego.imaging.model.PhotoMetaData;
 import com.vattima.lego.imaging.service.ImageManager;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.common.ImageMetadata;
 import org.springframework.stereotype.Component;
@@ -55,7 +54,7 @@ public class ImageManagerImpl implements ImageManager {
         try {
             imageMetadata = Imaging.getMetadata(photoMetaData.getAbsolutePath()
                                                              .toFile());
-        } catch (ImageReadException | IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
 

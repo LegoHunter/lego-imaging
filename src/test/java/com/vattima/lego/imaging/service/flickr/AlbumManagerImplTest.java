@@ -9,28 +9,22 @@ import com.vattima.lego.imaging.service.ImageManager;
 import com.vattima.lego.imaging.service.PhotoServiceUploadManager;
 import com.vattima.lego.imaging.test.UnitTestUtils;
 import com.vattima.lego.imaging.util.PathUtils;
-import lombok.extern.slf4j.Slf4j;
 import net.bricklink.data.lego.dao.BricklinkInventoryDao;
 import net.bricklink.data.lego.dto.BricklinkInventory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.util.ResourceUtils;
 
-import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Stream;
 
-import static java.nio.file.FileVisitResult.CONTINUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@Slf4j
 class AlbumManagerImplTest {
     private LegoImagingProperties legoImagingProperties;
     private ImageManager imageManager;
@@ -66,7 +60,7 @@ class AlbumManagerImplTest {
 
         UnitTestUtils.deleteSubDirectoriesInPath(jpgPath);
 
-        PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0504.JPG"));
+        PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0504.jpg"));
         Optional<AlbumManifest> albumManifest = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest).isNotEmpty();
     }
@@ -76,7 +70,8 @@ class AlbumManagerImplTest {
     void addPhoto_withNoUuid_returnsNull() throws Exception {
         FlickrProperties flickrProperties = new FlickrProperties();
 
-        Path jpgPath = Paths.get(ResourceUtils.getURL("classpath:actual-lego-photos-with-keyword-issues").toURI());
+        Path jpgPath = Path.of(ResourceUtils.getURL("classpath:actual-lego-photos-with-keyword-issues")
+                                              .toURI());
         legoImagingProperties.setRootImagesFolder(jpgPath.toFile()
                                                          .getAbsolutePath());
         bricklinkInventoryDao = mock(BricklinkInventoryDao.class);
@@ -84,26 +79,23 @@ class AlbumManagerImplTest {
         UnitTestUtils.deleteSubDirectoriesInPath(jpgPath);
 
         AlbumManager albumManager = new AlbumManagerImpl(imageManager, legoImagingProperties, bricklinkInventoryDao);
-        PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0504-missing-uuid.JPG"));
+        PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0504-missing-uuid.jpg"));
         Optional<AlbumManifest> albumManifest = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest).isEmpty();
     }
 
     @Test
     void addPhoto_inSameAlbum_returnsCachedAlbumManifest() throws Exception {
-        Resource resource = new ClassPathResource("actual-lego-photos-with-keywords-cache-test");
-        Path jpgPath = Paths.get(resource.getFile().toURI());
-
-        legoImagingProperties.setRootImagesFolder(jpgPath.toFile().getPath());
+        Path jpgPath = PathUtils.fromClasspath("actual-lego-photos-with-keywords-cache-test");
+        legoImagingProperties.setRootImagesFolder(jpgPath.toFile().getAbsolutePath());
         UnitTestUtils.deleteSubDirectoriesInPath(jpgPath);
 
         when(bricklinkInventoryDao.getByUuid(any(String.class))).thenReturn(new BricklinkInventory());
 
         AlbumManifest emptyAlbumManifest = albumManager.getAlbumManifest("bogus", "1234-1");
-
         assertThat(emptyAlbumManifest).isNotNull();
 
-        PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0505.JPG"));
+        PhotoMetaData photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0505.jpg"));
         Optional<AlbumManifest> albumManifest1 = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest1).isNotEmpty();
         String uuid = photoMetaData.getKeyword("uuid");
@@ -111,16 +103,16 @@ class AlbumManagerImplTest {
         assertThat(albumManifestWithUuid).isNotNull();
         assertThat(albumManifestWithUuid).isSameAs(albumManifest1.get());
 
-        photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0506.JPG"));
+        photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0506.jpg"));
         Optional<AlbumManifest> albumManifest2 = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest2.get()).isSameAs(albumManifest1.get());
 
-        photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0514.JPG"));
+        photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0514.jpg"));
         Optional<AlbumManifest> albumManifest3 = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest3).isNotEmpty();
         assertThat(albumManifest3.get()).isNotIn(albumManifest1, albumManifest2);
 
-        photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0515.JPG"));
+        photoMetaData = new PhotoMetaData(jpgPath.resolve("DSC_0515.jpg"));
         Optional<AlbumManifest> albumManifest4 = albumManager.addPhoto(photoMetaData);
         assertThat(albumManifest4).isNotEmpty();
 
@@ -132,8 +124,8 @@ class AlbumManagerImplTest {
     @Test
     void addPhoto_hasChangedPhotos_updatesAlbumManifest_andReplacesPhotos() throws Exception {
         Path rootTestImagePath = PathUtils.fromClasspath("actual-lego-photos-with-keywords-changed-md5-test");
-        Path existingPath = rootTestImagePath.resolve(Paths.get("existing"));
-        Path changedPath = rootTestImagePath.resolve(Paths.get("changed"));
+        Path existingPath = rootTestImagePath.resolve(Path.of("existing"));
+        Path changedPath = rootTestImagePath.resolve(Path.of("changed"));
 
         UnitTestUtils.deleteSubDirectoriesInPath(existingPath);
         legoImagingProperties.setRootImagesFolder(existingPath.toFile()
@@ -141,7 +133,7 @@ class AlbumManagerImplTest {
         when(bricklinkInventoryDao.getByUuid(any(String.class))).thenReturn(new BricklinkInventory());
 
         Set<AlbumManifest> albumManifests = new HashSet<>();
-        Files.walk(Paths.get(legoImagingProperties.getRootImagesFolder()))
+        Files.walk(Path.of(legoImagingProperties.getRootImagesFolder()))
              .filter(p -> p.getFileName()
                            .toString()
                            .endsWith(".JPG"))

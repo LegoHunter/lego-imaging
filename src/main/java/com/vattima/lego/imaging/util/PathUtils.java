@@ -3,7 +3,6 @@ package com.vattima.lego.imaging.util;
 import org.springframework.util.ResourceUtils;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public final class PathUtils {
     private PathUtils() {
@@ -14,6 +13,6 @@ public final class PathUtils {
     }
 
     public static Path fromClasspath(String pathname) throws Exception {
-        return Paths.get(ResourceUtils.getURL("classpath:" + pathname).toURI());
+        return Path.of(ResourceUtils.getURL("classpath:" + pathname).toURI());
     }
 }

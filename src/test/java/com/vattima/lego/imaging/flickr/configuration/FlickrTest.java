@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 @Slf4j
 class FlickrTest {
@@ -21,8 +21,8 @@ class FlickrTest {
     @Disabled
     void flickr_photosets_getList() throws Exception {
         FlickrProperties flickrProperties = new FlickrProperties();
-        flickrProperties.setClientConfigDir(Paths.get("C:\\Users\\tvatt\\.credentials\\flickr.api"));
-        flickrProperties.setClientConfigFile(Paths.get("flickr-client-api-keys.json"));
+        flickrProperties.setClientConfigDir(Path.of("C:\\Users\\tvatt\\.credentials\\flickr.api"));
+        flickrProperties.setClientConfigFile(Path.of("flickr-client-api-keys.json"));
         FlickrProperties.Secrets secrets = flickrProperties.getFlickr().getApplication("lego-imaging").getSecrets();
 
         Transport transport = new REST();
