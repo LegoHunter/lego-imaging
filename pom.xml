@@ -39,7 +39,7 @@
         </repository>
         <repository>
             <id>github</id>
-            <url>https://maven.pkg.github.com/tvattima/*</url>
+            <url>https://maven.pkg.github.com/${github.organization}/*</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
