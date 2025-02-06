@@ -16,7 +16,7 @@
 
     <properties>
         <java.version>22</java.version>
-        <bricklink-data.version>1.3.0-SNAPSHOT</bricklink-data.version>
+        <lego-data.version>1.3.0-SNAPSHOT</lego-data.version>
         <openfeign.version>10.12</openfeign.version>
         <lombok.version>1.18.34</lombok.version>
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
@@ -48,9 +48,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.bricklink.data</groupId>
-            <artifactId>bricklink-data</artifactId>
-            <version>${bricklink-data.version}</version>
+            <groupId>net.lego</groupId>
+            <artifactId>lego-data</artifactId>
+            <version>${lego-data.version}</version>
         </dependency>
 
         <dependency>
