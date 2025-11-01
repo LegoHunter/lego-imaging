@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.5</version>
+        <version>3.5.7</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.vattima.lego</groupId>
@@ -18,7 +18,7 @@
         <java.version>22</java.version>
         <lego-data.version>1.3.0-SNAPSHOT</lego-data.version>
         <openfeign.version>10.12</openfeign.version>
-        <lombok.version>1.18.34</lombok.version>
+        <lombok.version>1.18.42</lombok.version>
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
         <mybatis-spring-boot-starter.version>3.0.3</mybatis-spring-boot-starter.version>
         <github.organization>LegoHunter</github.organization>
@@ -153,7 +153,7 @@
             <plugin>
                 <groupId>org.openrewrite.maven</groupId>
                 <artifactId>rewrite-maven-plugin</artifactId>
-                <version>5.43.0</version>
+                <version>6.22.1</version>
                 <configuration>
                     <activeRecipes>
                         <recipe>org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0</recipe>
@@ -161,13 +161,15 @@
                         <recipe>org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_2</recipe>
                         <recipe>org.openrewrite.java.spring.boot3.SpringBootProperties_3_3</recipe>
                         <recipe>org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_3</recipe>
+                        <recipe>org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_4</recipe>
+                        <recipe>org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_5</recipe>
                     </activeRecipes>
                 </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>org.openrewrite.recipe</groupId>
                         <artifactId>rewrite-spring</artifactId>
-                        <version>5.22.0</version>
+                        <version>6.17.0</version>
                     </dependency>
                 </dependencies>
             </plugin>
