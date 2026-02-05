@@ -1,39 +1,30 @@
+import-path: /dev/config
+
 spring:
    jmx:
       enabled: false
    application:
       name: Lego Imaging Application
+
+   config:
+     import: file:${import-path}/database/database-configuration.yml
    datasource:
-      url: jdbc:mysql://shared50.accountservergroup.com:3306/a925261_dev_lego?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
-      client-config-dir: C:\Users\tvatt\.credentials\site5\database
-      client-config-file: site5-database-configuration.json
-      database-key-name: site5-dev-lego
-      hikari:
-         connection-timeout: 10000
-         idle-timeout: 30000
-         connection-test-query: SELECT 1
-         initialization-fail-timeout: 10000
-         auto-commit: false
-         login-timeout: 10000
-         minimum-idle: 5
-         maximum-pool-size: 25
-         validation-timeout: 10000
-         pool-name: site5-mysql-jdbc-pool
+     database-key-name: rasppi5-01-lego-prod-legacy
+     hikari:
+       connection-timeout: 10000
+       idle-timeout: 30000
+       connection-test-query: SELECT 1
+       initialization-fail-timeout: 10000
+       auto-commit: false
+       login-timeout: 10000
+       minimum-idle: 10
+       maximum-pool-size: 10
+       validation-timeout: 10000
+       pool-name: rasppi5-01-mysql-jdbc-pool
 
 logging:
    level:
-      root: DEBUG
-      com.vattima.lego.command: INFO
-      com.vattima.lego.data.ibatis.mapper: WARN
-      net.bricklink.data: WARN
-      com.bricklink: WARN
-      org.springframework.jdbc: WARN
-      org.mybatis: WARN
-      com.gargoylesoftware: ERROR
-      com.gargoylesoftware.htmlunit.javascript.StrictErrorReporter: OFF
-      com.zaxxer: DEBUG
-      feign: WARN
-      sun: WARN
+      root: INFO
 
 bricklink:
    rest:
