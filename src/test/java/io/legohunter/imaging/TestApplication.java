@@ -1,6 +1,6 @@
 package io.legohunter.imaging;
 
-import io.legohunter.imaging.flickr.configuration.FlickrProperties;
+import io.legohunter.imaging.flickr.config.FlickrProperties;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 

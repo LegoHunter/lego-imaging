@@ -1,6 +1,6 @@
 package io.legohunter.imaging.test;
 
-import io.legohunter.imaging.LegoImagingException;
+import io.legohunter.imaging.exception.LegoImagingException;
 
 import java.io.IOException;
 import java.nio.file.Files;

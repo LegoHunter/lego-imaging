@@ -8,7 +8,7 @@ import com.flickr4java.flickr.photos.PhotoList;
 import com.flickr4java.flickr.photosets.Photoset;
 import com.flickr4java.flickr.photosets.Photosets;
 import com.flickr4java.flickr.photosets.PhotosetsInterface;
-import io.legohunter.imaging.LegoImagingException;
+import io.legohunter.imaging.exception.LegoImagingException;
 
 import java.net.MalformedURLException;
 import java.net.URL;

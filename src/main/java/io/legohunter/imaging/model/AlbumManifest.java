@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import io.legohunter.imaging.LegoImagingException;
+import io.legohunter.imaging.exception.LegoImagingException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -39,11 +39,11 @@ public class AlbumManifest {
     private URL shortUrl;
     private String uuid;
     private String blItemNumber;
-    private List<PhotoMetaData> photos = new ArrayList<>();
+    private List<PhotoMetaDataV1> photos = new ArrayList<>();
     private boolean isNew;
 
     @JsonIgnore
-    public Optional<PhotoMetaData> getPhotoByFilename(Path filename) {
+    public Optional<PhotoMetaDataV1> getPhotoByFilename(Path filename) {
         return photos.stream()
                      .filter(p -> p.getFilename()
                                    .equals(filename))
@@ -51,9 +51,9 @@ public class AlbumManifest {
     }
 
     @JsonIgnore
-    public PhotoMetaData getPrimaryPhoto() {
-         Optional<PhotoMetaData> primary = photos.stream()
-                                                .filter(PhotoMetaData::getPrimary)
+    public PhotoMetaDataV1 getPrimaryPhoto() {
+         Optional<PhotoMetaDataV1> primary = photos.stream()
+                                                .filter(PhotoMetaDataV1::getPrimary)
                                                 .reduce((a, b) -> {
                                                     log.warn("Multiple Photos are marked primary for uuid [{}], item [{}] - choosing the first one below", getUuid(), getBlItemNumber());
                                                     log.warn("[{}]", a);
@@ -71,8 +71,8 @@ public class AlbumManifest {
 
     @JsonIgnore
     public boolean hasPrimaryPhoto() {
-        Optional<PhotoMetaData> primary = photos.stream()
-                                                .filter(PhotoMetaData::getPrimary)
+        Optional<PhotoMetaDataV1> primary = photos.stream()
+                                                .filter(PhotoMetaDataV1::getPrimary)
                                                 .findFirst();
         return primary.isPresent();
     }
@@ -98,12 +98,12 @@ public class AlbumManifest {
     }
 
     @JsonIgnore
-    public static Path getAlbumManifestPath(Path root, PhotoMetaData photoMetaData) {
+    public static Path getAlbumManifestPath(Path root, PhotoMetaDataV1 photoMetaData) {
         return getAlbumManifestPath(root, photoMetaData.getKeyword("uuid"), photoMetaData.getKeyword("bl"));
     }
 
     @JsonIgnore
-    public static Path getAlbumManifestFile(Path root, PhotoMetaData photoMetaData) {
+    public static Path getAlbumManifestFile(Path root, PhotoMetaDataV1 photoMetaData) {
         return getAlbumManifestFile(root, photoMetaData.getKeyword("uuid"), photoMetaData.getKeyword("bl"));
     }
 
