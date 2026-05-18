@@ -7,7 +7,7 @@ spring:
       name: Lego Imaging Application
 
    config:
-     import: file:${import-path}/database/database-configuration.yml
+     import: file:${import-path}/database-configuration.yml
    datasource:
      database-key-name: rasppi5-01-lego-prod-legacy
      hikari:
