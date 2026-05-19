@@ -1,10 +1,10 @@
 package io.legohunter.imaging.flickr.model;
 
-import com.flickr4java.flickr.photosets.Photoset;
+import io.legohunter.imaging.model.HostedAlbum;
 
-public class CreatePhotoSetResponse extends FlickrServiceResponse<Photoset> {
-    public CreatePhotoSetResponse(Photoset photoset) {
-        super(photoset);
+public class CreatePhotoSetResponse extends FlickrServiceResponse<HostedAlbum> {
+    public CreatePhotoSetResponse(HostedAlbum album) {
+        super(album);
     }
 
     public CreatePhotoSetResponse(Exception e, String errorCode, String errorMessage) {
