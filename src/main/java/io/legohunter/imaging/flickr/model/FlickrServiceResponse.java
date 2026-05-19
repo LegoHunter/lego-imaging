@@ -5,6 +5,8 @@ import io.legohunter.imaging.model.PhotoServiceResponse;
 import java.util.Optional;
 
 public class FlickrServiceResponse<T> implements PhotoServiceResponse<T> {
+    public static final String INTERNAL_ERROR_CODE = "-1";
+
     private T t;
     private Exception e;
     private String errorCode;
@@ -20,6 +22,10 @@ public class FlickrServiceResponse<T> implements PhotoServiceResponse<T> {
         this.e = e;
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
+    }
+
+    public FlickrServiceResponse(Exception e) {
+        this(e, INTERNAL_ERROR_CODE, e.getMessage());
     }
 
     @Override

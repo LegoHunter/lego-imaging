@@ -1,33 +1,30 @@
 package io.legohunter.imaging.service.upload.impl;
 
-import com.flickr4java.flickr.Flickr;
-import com.flickr4java.flickr.FlickrException;
-import com.flickr4java.flickr.photosets.Photoset;
-import com.flickr4java.flickr.photosets.PhotosetsInterface;
-import com.flickr4java.flickr.uploader.IUploader;
-import com.flickr4java.flickr.uploader.UploadMetaData;
 import io.legohunter.imaging.config.LegoImagingProperties;
 import io.legohunter.imaging.exception.LegoImagingException;
 import io.legohunter.imaging.model.AlbumManifest;
+import io.legohunter.imaging.model.HostedAlbum;
+import io.legohunter.imaging.model.HostedAlbumMembershipRequest;
 import io.legohunter.imaging.model.PhotoMetaDataV1;
 import io.legohunter.imaging.bitly.model.bitly.ShortenRequest;
 import io.legohunter.imaging.bitly.impl.BitlinksService;
+import io.legohunter.imaging.model.PhotoServiceResponse;
+import io.legohunter.imaging.model.SimplePhotoServiceRequest;
 import io.legohunter.imaging.service.album.api.AlbumManager;
+import io.legohunter.imaging.service.hosting.api.ImageHostingService;
 import io.legohunter.imaging.service.upload.api.PhotoServiceUploadManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StopWatch;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -35,8 +32,7 @@ import java.util.Set;
 @Slf4j
 @Configuration
 public class PhotoServiceUploadManagerImpl implements PhotoServiceUploadManager {
-    private final PhotosetsInterface photosetsInterface;
-    private final IUploader uploader;
+    private final ImageHostingService imageHostingService;
     private final LegoImagingProperties legoImagingProperties;
     private final AlbumManager albumManager;
     private final BitlinksService bitlinksService;
@@ -57,45 +53,31 @@ public class PhotoServiceUploadManagerImpl implements PhotoServiceUploadManager 
                                     log.info("Uploading changed photo [{}]", pmd);
                                     StopWatch timer = new StopWatch();
                                     timer.start();
-                                    String response = uploader.replace(Files.readAllBytes(pmd.getAbsolutePath()), pmd.getPhotoId(), false);
+                                    PhotoServiceResponse<String> response = imageHostingService.replacePhoto(new SimplePhotoServiceRequest<>(pmd));
+                                    assertSuccess(response, pmd);
                                     timer.stop();
-                                    pmd.setPhotoId(response);
+                                    pmd.setPhotoId(response.get());
                                     pmd.setChanged(false);
                                     log.info("Uploaded changed photo [{}] in [{}] ms", pmd, timer.getTotalTimeMillis());
                                 } else {
                                     log.debug("Photo not changed [{}]", pmd);
                                 }
                             } else {
-                                UploadMetaData uploadMetaData = new UploadMetaData();
-                                uploadMetaData.setAsync(false);
-                                uploadMetaData.setContentType(Flickr.CONTENTTYPE_PHOTO);
-                                uploadMetaData.setFamilyFlag(false);
-                                uploadMetaData.setFilemimetype("image/jpeg");
-                                uploadMetaData.setFilename(pmd.getFilename()
-                                        .toString());
-                                uploadMetaData.setDescription("Description [" + pmd.getFilename()
-                                        .toString() + "]");
-                                uploadMetaData.setFriendFlag(false);
-                                uploadMetaData.setHidden(false);
-                                uploadMetaData.setPublicFlag(true);
-                                uploadMetaData.setSafetyLevel(Flickr.SAFETYLEVEL_SAFE);
-                                uploadMetaData.setTags(Collections.emptyList());
-                                uploadMetaData.setTitle("Title [" + pmd.getFilename()
-                                        .toString() + "]");
                                 log.info("Uploading new [{}]", pmd);
                                 StopWatch timer = new StopWatch();
                                 timer.start();
-                                String response = uploader.upload(Files.readAllBytes(pmd.getAbsolutePath()), uploadMetaData);
+                                PhotoServiceResponse<String> response = imageHostingService.uploadPhoto(new SimplePhotoServiceRequest<>(pmd));
+                                assertSuccess(response, pmd);
                                 timer.stop();
                                 pmd.setUploadReturnCode(0);
                                 pmd.setUploadedTimeStamp(LocalDateTime.now());
-                                pmd.setPhotoId(response);
+                                pmd.setPhotoId(response.get());
                                 pmd.setChanged(false);
                                 log.info("Uploaded new [{}] in [{}] ms", pmd, timer.getTotalTimeMillis());
                             }
-                        } catch (FlickrException | IOException e) {
+                        } catch (LegoImagingException e) {
                             pmd.setUploadReturnCode(-1);
-                            throw new LegoImagingException(e);
+                            throw e;
                         }
                     });
             // Create the Album if it doesn't exist
@@ -104,26 +86,45 @@ public class PhotoServiceUploadManagerImpl implements PhotoServiceUploadManager 
             String photosetId = Optional.ofNullable(a.getPhotosetId())
                     .orElseGet(() -> {
                         try {
-                            Photoset photoset = photosetsInterface.create(a.getTitle(), a.getDescription(), primaryPhotoId);
-                            log.info("Created Photoset [{}] with primary photo id [{}] - filename [{}]", photoset, primaryPhotoId, primaryPhoto.getFilename());
-                            a.setPhotosetId(photoset.getId());
-                            a.setUrl(new URL(photoset.getUrl()));
+                            PhotoServiceResponse<HostedAlbum> response = imageHostingService.createAlbum(new SimplePhotoServiceRequest<>(a));
+                            assertSuccess(response);
+                            HostedAlbum album = response.get();
+                            log.info("Created Photoset [{}] with primary photo id [{}] - filename [{}]", album, primaryPhotoId, primaryPhoto.getFilename());
+                            a.setPhotosetId(album.getId());
+                            a.setUrl(new URL(album.getUrl()));
                             ShortenRequest shortenRequest = new ShortenRequest();
                             shortenRequest.setLongUrl(a.getUrl().toExternalForm());
                             a.setShortUrl(new URL(bitlinksService.shorten(shortenRequest).getLink()));
                             return a.getPhotosetId();
-                        } catch (MalformedURLException | FlickrException e) {
+                        } catch (MalformedURLException e) {
                             throw new LegoImagingException(e);
                         }
                     });
-            try {
-                photosetsInterface.editPhotos(a.getPhotosetId(), primaryPhotoId, a.getPhotoIdsArray());
+            PhotoServiceResponse<Void> response = imageHostingService.updateAlbumMembership(new SimplePhotoServiceRequest<>(HostedAlbumMembershipRequest.builder()
+                    .albumId(a.getPhotosetId())
+                    .primaryPhotoId(primaryPhotoId)
+                    .photoIds(new LinkedHashSet<>(a.getPhotoIds()))
+                    .build()));
+            if (response.isError()) {
+                log.error(response.responseMessage());
+            } else {
                 log.info("Updated PhotosetId [{}] with primary photo id [{}] - added photos {}", photosetId, primaryPhoto.getPhotoId(), a.getPhotoIdsArray());
-            } catch (FlickrException e) {
-                log.error(e.getMessage(), e);
             }
             AlbumManifest.toJson(a.getAlbumManifestFile(root), a);
         });
         albumManifests.clear();
+    }
+
+    private void assertSuccess(PhotoServiceResponse<?> response, PhotoMetaDataV1 photoMetaData) {
+        if (response.isError()) {
+            photoMetaData.setUploadReturnCode(response.responseCode());
+            throw new LegoImagingException(response.responseMessage());
+        }
+    }
+
+    private void assertSuccess(PhotoServiceResponse<?> response) {
+        if (response.isError()) {
+            throw new LegoImagingException(response.responseMessage());
+        }
     }
 }
