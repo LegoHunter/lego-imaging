@@ -13,6 +13,7 @@ import io.legohunter.imaging.model.AlbumManifest;
 import io.legohunter.imaging.model.HostedAlbum;
 import io.legohunter.imaging.model.HostedAlbumMembershipRequest;
 import io.legohunter.imaging.model.HostedPhoto;
+import io.legohunter.imaging.model.HostedPhotoMetadataUpdate;
 import io.legohunter.imaging.model.PhotoMetaDataV1;
 import io.legohunter.imaging.model.PhotoServiceResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +28,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -127,6 +129,41 @@ class FlickrPhotoServiceTest {
 
         assertThat(response.isError()).isFalse();
         verify(photosetsInterface).editPhotos("album-123", "photo-1", new String[]{"photo-1", "photo-2"});
+    }
+
+    @Test
+    void updatePhotoMetadata_setsMetaAndTags() throws Exception {
+        HostedPhotoMetadataUpdate request = HostedPhotoMetadataUpdate.builder()
+                .photoId("photo-123")
+                .title("Front view")
+                .description("Photo description")
+                .tag("lego")
+                .tag("sealed")
+                .build();
+
+        PhotoServiceResponse<Void> response = flickrPhotoService.updatePhotoMetadata(new FlickrServiceRequest<>(request));
+
+        assertThat(response.isError()).isFalse();
+        verify(photosInterface).setMeta("photo-123", "Front view", "Photo description");
+        verify(photosInterface).setTags("photo-123", new String[]{"lego", "sealed"});
+    }
+
+    @Test
+    void updatePhotoMetadata_mapsProviderError() throws Exception {
+        HostedPhotoMetadataUpdate request = HostedPhotoMetadataUpdate.builder()
+                .photoId("photo-123")
+                .title("Front view")
+                .description("Photo description")
+                .build();
+        doThrow(new FlickrException("98", "metadata rejected"))
+                .when(photosInterface)
+                .setMeta("photo-123", "Front view", "Photo description");
+
+        PhotoServiceResponse<Void> response = flickrPhotoService.updatePhotoMetadata(new FlickrServiceRequest<>(request));
+
+        assertThat(response.isError()).isTrue();
+        assertThat(response.responseCode()).isEqualTo(98);
+        assertThat(response.responseMessage()).isEqualTo("metadata rejected");
     }
 
     @Test
