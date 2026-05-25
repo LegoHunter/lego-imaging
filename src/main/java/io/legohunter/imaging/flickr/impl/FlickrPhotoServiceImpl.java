@@ -15,6 +15,7 @@ import io.legohunter.imaging.model.AlbumManifest;
 import io.legohunter.imaging.model.HostedAlbum;
 import io.legohunter.imaging.model.HostedAlbumMembershipRequest;
 import io.legohunter.imaging.model.HostedPhoto;
+import io.legohunter.imaging.model.HostedPhotoMetadataUpdate;
 import io.legohunter.imaging.model.PhotoMetaDataV1;
 import io.legohunter.imaging.model.PhotoServiceRequest;
 import io.legohunter.imaging.model.PhotoServiceResponse;
@@ -112,6 +113,26 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
                     membershipRequest.getAlbumId(),
                     membershipRequest.getPrimaryPhotoId(),
                     membershipRequest.getPhotoIds().toArray(String[]::new));
+            response = new FlickrServiceResponse<>((Void) null);
+        } catch (FlickrException e) {
+            response = flickrError(e);
+        }
+        log.debug("Flickr Response [{}]", response);
+        return response;
+    }
+
+    @Override
+    public PhotoServiceResponse<Void> updatePhotoMetadata(PhotoServiceRequest<HostedPhotoMetadataUpdate> request) {
+        PhotoServiceResponse<Void> response;
+        HostedPhotoMetadataUpdate metadataUpdate = request.get();
+        try {
+            photosInterface.setMeta(
+                    metadataUpdate.getPhotoId(),
+                    metadataUpdate.getTitle(),
+                    metadataUpdate.getDescription());
+            if (metadataUpdate.getTags() != null && !metadataUpdate.getTags().isEmpty()) {
+                photosInterface.setTags(metadataUpdate.getPhotoId(), metadataUpdate.getTags().toArray(String[]::new));
+            }
             response = new FlickrServiceResponse<>((Void) null);
         } catch (FlickrException e) {
             response = flickrError(e);
