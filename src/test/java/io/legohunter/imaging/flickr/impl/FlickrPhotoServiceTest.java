@@ -2,6 +2,9 @@ package io.legohunter.imaging.flickr.impl;
 
 import com.flickr4java.flickr.Flickr;
 import com.flickr4java.flickr.FlickrException;
+import com.flickr4java.flickr.RequestContext;
+import com.flickr4java.flickr.auth.Auth;
+import com.flickr4java.flickr.auth.Permission;
 import com.flickr4java.flickr.photos.Photo;
 import com.flickr4java.flickr.photos.PhotosInterface;
 import com.flickr4java.flickr.photosets.Photoset;
@@ -16,6 +19,7 @@ import io.legohunter.imaging.model.HostedPhoto;
 import io.legohunter.imaging.model.HostedPhotoMetadataUpdate;
 import io.legohunter.imaging.model.PhotoMetaDataV1;
 import io.legohunter.imaging.model.PhotoServiceResponse;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -28,6 +32,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -38,6 +43,7 @@ class FlickrPhotoServiceTest {
     private IUploader uploader;
     private PhotosetsInterface photosetsInterface;
     private PhotosInterface photosInterface;
+    private Auth flickrAuth;
     private FlickrPhotoServiceImpl flickrPhotoService;
 
     @BeforeEach
@@ -45,7 +51,17 @@ class FlickrPhotoServiceTest {
         uploader = mock(IUploader.class);
         photosetsInterface = mock(PhotosetsInterface.class);
         photosInterface = mock(PhotosInterface.class);
-        flickrPhotoService = new FlickrPhotoServiceImpl(uploader, photosetsInterface, photosInterface);
+        flickrAuth = new Auth();
+        flickrAuth.setPermission(Permission.DELETE);
+        flickrAuth.setToken("oauth-token");
+        flickrAuth.setTokenSecret("oauth-token-secret");
+        RequestContext.getRequestContext().setAuth(null);
+        flickrPhotoService = new FlickrPhotoServiceImpl(uploader, photosetsInterface, photosInterface, flickrAuth);
+    }
+
+    @AfterEach
+    void tearDown() {
+        RequestContext.getRequestContext().setAuth(null);
     }
 
     @Test
@@ -72,6 +88,40 @@ class FlickrPhotoServiceTest {
         assertThat(metadata.isHidden()).isFalse();
         assertThat(metadata.getSafetyLevel()).isEqualTo(Flickr.SAFETYLEVEL_SAFE);
         assertThat(metadata.getTags()).isEmpty();
+    }
+
+    @Test
+    void uploadPhoto_setsFlickrAuthOnCurrentThreadAndRestoresPreviousAuth(@TempDir Path tempDir) throws Exception {
+        Path photoPath = tempDir.resolve("photo.jpg");
+        Files.write(photoPath, new byte[]{1, 2, 3});
+        Auth previousAuth = new Auth();
+        previousAuth.setToken("previous-token");
+        RequestContext.getRequestContext().setAuth(previousAuth);
+        doAnswer(invocation -> {
+            assertThat(RequestContext.getRequestContext().getAuth()).isSameAs(flickrAuth);
+            return "photo-123";
+        }).when(uploader).upload(any(byte[].class), any(UploadMetaData.class));
+
+        PhotoServiceResponse<String> response = flickrPhotoService.uploadPhoto(new FlickrServiceRequest<>(new PhotoMetaDataV1(photoPath)));
+
+        assertThat(response.isError()).isFalse();
+        assertThat(RequestContext.getRequestContext().getAuth()).isSameAs(previousAuth);
+    }
+
+    @Test
+    void uploadPhoto_restoresPreviousAuthWhenProviderFails(@TempDir Path tempDir) throws Exception {
+        Path photoPath = tempDir.resolve("photo.jpg");
+        Files.write(photoPath, new byte[]{1});
+        Auth previousAuth = new Auth();
+        previousAuth.setToken("previous-token");
+        RequestContext.getRequestContext().setAuth(previousAuth);
+        when(uploader.upload(any(byte[].class), any(UploadMetaData.class)))
+                .thenThrow(new FlickrException("99", "Insufficient permissions"));
+
+        PhotoServiceResponse<String> response = flickrPhotoService.uploadPhoto(new FlickrServiceRequest<>(new PhotoMetaDataV1(photoPath)));
+
+        assertThat(response.isError()).isTrue();
+        assertThat(RequestContext.getRequestContext().getAuth()).isSameAs(previousAuth);
     }
 
     @Test

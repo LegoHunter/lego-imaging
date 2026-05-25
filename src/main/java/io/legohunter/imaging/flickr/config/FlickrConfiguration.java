@@ -2,7 +2,6 @@ package io.legohunter.imaging.flickr.config;
 
 import com.flickr4java.flickr.Flickr;
 import com.flickr4java.flickr.REST;
-import com.flickr4java.flickr.RequestContext;
 import com.flickr4java.flickr.Transport;
 import com.flickr4java.flickr.auth.Auth;
 import com.flickr4java.flickr.auth.Permission;
@@ -11,7 +10,6 @@ import com.flickr4java.flickr.photos.PhotosInterface;
 import com.flickr4java.flickr.photos.upload.UploadInterface;
 import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import com.flickr4java.flickr.uploader.IUploader;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -20,10 +18,8 @@ import static io.legohunter.imaging.flickr.config.FlickrProperties.Secrets;
 @Configuration
 public class FlickrConfiguration {
     @Bean
-    public Secrets getFlickrSecrets(FlickrProperties flickrProperties, @Value("${flickr.application-name}") String name) {
-        return flickrProperties.getFlickr()
-                               .getApplication(name)
-                               .getSecrets();
+    public Secrets getFlickrSecrets(FlickrProperties flickrProperties) {
+        return flickrProperties.getSecrets();
     }
 
     @Bean
@@ -32,17 +28,19 @@ public class FlickrConfiguration {
     }
 
     @Bean
-    public Transport flickrTransport(FlickrProperties flickrProperties, Secrets flickerSecrets) {
-        Transport transport = new REST();
-        RequestContext requestContext = RequestContext.getRequestContext();
+    public Auth flickrAuth(Secrets flickrSecrets) {
         Auth auth = new Auth();
         auth.setPermission(Permission.DELETE);
-        auth.setToken(flickerSecrets.getToken());
-        auth.setTokenSecret(flickerSecrets.getTokenSecret());
-        requestContext.setAuth(auth);
-        Flickr.debugRequest = flickrProperties.getDebugRequest();
-        Flickr.debugStream = flickrProperties.getDebugStream();
-        return transport;
+        auth.setToken(flickrSecrets.getToken());
+        auth.setTokenSecret(flickrSecrets.getTokenSecret());
+        return auth;
+    }
+
+    @Bean
+    public Transport flickrTransport(FlickrProperties flickrProperties) {
+        Flickr.debugRequest = Boolean.TRUE.equals(flickrProperties.getDebugRequest());
+        Flickr.debugStream = Boolean.TRUE.equals(flickrProperties.getDebugStream());
+        return new REST();
     }
 
     @Bean

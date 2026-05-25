@@ -2,6 +2,8 @@ package io.legohunter.imaging.flickr.impl;
 
 import com.flickr4java.flickr.Flickr;
 import com.flickr4java.flickr.FlickrException;
+import com.flickr4java.flickr.RequestContext;
+import com.flickr4java.flickr.auth.Auth;
 import com.flickr4java.flickr.photos.Photo;
 import com.flickr4java.flickr.photos.PhotosInterface;
 import com.flickr4java.flickr.photosets.Photoset;
@@ -37,13 +39,15 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
     private final IUploader uploader;
     private final PhotosetsInterface photosetsInterface;
     private final PhotosInterface photosInterface;
+    private final Auth flickrAuth;
 
     @Override
     public PhotoServiceResponse<String> uploadPhoto(PhotoServiceRequest<PhotoMetaDataV1> request) {
         PhotoServiceResponse<String> response;
         PhotoMetaDataV1 photoMetaData = request.get();
         try {
-            String photoId = uploader.upload(Files.readAllBytes(photoMetaData.getAbsolutePath()), uploadMetaData(photoMetaData));
+            byte[] photoBytes = Files.readAllBytes(photoMetaData.getAbsolutePath());
+            String photoId = withFlickrAuth(() -> uploader.upload(photoBytes, uploadMetaData(photoMetaData)));
             response = new FlickrServiceResponse<>(photoId);
         } catch (FlickrException e) {
             response = flickrError(e);
@@ -59,7 +63,8 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
         PhotoServiceResponse<String> response;
         PhotoMetaDataV1 photoMetaData = request.get();
         try {
-            String photoId = uploader.replace(Files.readAllBytes(photoMetaData.getAbsolutePath()), photoMetaData.getPhotoId(), SYNC_UPLOAD);
+            byte[] photoBytes = Files.readAllBytes(photoMetaData.getAbsolutePath());
+            String photoId = withFlickrAuth(() -> uploader.replace(photoBytes, photoMetaData.getPhotoId(), SYNC_UPLOAD));
             response = new FlickrServiceResponse<>(photoId);
         } catch (FlickrException e) {
             response = flickrError(e);
@@ -74,7 +79,10 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
     public PhotoServiceResponse<Void> deletePhoto(PhotoServiceRequest<String> request) {
         PhotoServiceResponse<Void> response;
         try {
-            photosInterface.delete(request.get());
+            withFlickrAuth(() -> {
+                photosInterface.delete(request.get());
+                return null;
+            });
             response = new FlickrServiceResponse<>((Void) null);
         } catch (FlickrException e) {
             response = flickrError(e);
@@ -92,7 +100,10 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
                 throw new LegoImagingException("Cannot create a Flickr Album that has no photos");
             }
             PhotoMetaDataV1 primaryPhoto = albumManifest.getPrimaryPhoto();
-            Photoset photoset = photosetsInterface.create(albumManifest.getTitle(), albumManifest.getDescription(), primaryPhoto.getPhotoId());
+            Photoset photoset = withFlickrAuth(() -> photosetsInterface.create(
+                    albumManifest.getTitle(),
+                    albumManifest.getDescription(),
+                    primaryPhoto.getPhotoId()));
             response = new FlickrServiceResponse<>(HostedAlbum.builder()
                     .id(photoset.getId())
                     .url(photoset.getUrl())
@@ -109,10 +120,13 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
         PhotoServiceResponse<Void> response;
         HostedAlbumMembershipRequest membershipRequest = request.get();
         try {
-            photosetsInterface.editPhotos(
-                    membershipRequest.getAlbumId(),
-                    membershipRequest.getPrimaryPhotoId(),
-                    membershipRequest.getPhotoIds().toArray(String[]::new));
+            withFlickrAuth(() -> {
+                photosetsInterface.editPhotos(
+                        membershipRequest.getAlbumId(),
+                        membershipRequest.getPrimaryPhotoId(),
+                        membershipRequest.getPhotoIds().toArray(String[]::new));
+                return null;
+            });
             response = new FlickrServiceResponse<>((Void) null);
         } catch (FlickrException e) {
             response = flickrError(e);
@@ -126,13 +140,16 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
         PhotoServiceResponse<Void> response;
         HostedPhotoMetadataUpdate metadataUpdate = request.get();
         try {
-            photosInterface.setMeta(
-                    metadataUpdate.getPhotoId(),
-                    metadataUpdate.getTitle(),
-                    metadataUpdate.getDescription());
-            if (metadataUpdate.getTags() != null && !metadataUpdate.getTags().isEmpty()) {
-                photosInterface.setTags(metadataUpdate.getPhotoId(), metadataUpdate.getTags().toArray(String[]::new));
-            }
+            withFlickrAuth(() -> {
+                photosInterface.setMeta(
+                        metadataUpdate.getPhotoId(),
+                        metadataUpdate.getTitle(),
+                        metadataUpdate.getDescription());
+                if (metadataUpdate.getTags() != null && !metadataUpdate.getTags().isEmpty()) {
+                    photosInterface.setTags(metadataUpdate.getPhotoId(), metadataUpdate.getTags().toArray(String[]::new));
+                }
+                return null;
+            });
             response = new FlickrServiceResponse<>((Void) null);
         } catch (FlickrException e) {
             response = flickrError(e);
@@ -146,7 +163,7 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
         PhotoServiceResponse<HostedPhoto> response;
         String photoId = request.get();
         try {
-            Photo photo = photosInterface.getPhoto(photoId);
+            Photo photo = withFlickrAuth(() -> photosInterface.getPhoto(photoId));
             response = new FlickrServiceResponse<>(HostedPhoto.builder()
                     .id(photo.getId())
                     .title(photo.getTitle())
@@ -175,7 +192,23 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
         return uploadMetaData;
     }
 
+    private <T> T withFlickrAuth(FlickrCall<T> call) throws FlickrException {
+        RequestContext requestContext = RequestContext.getRequestContext();
+        Auth previousAuth = requestContext.getAuth();
+        requestContext.setAuth(flickrAuth);
+        try {
+            return call.execute();
+        } finally {
+            requestContext.setAuth(previousAuth);
+        }
+    }
+
     private <T> PhotoServiceResponse<T> flickrError(FlickrException e) {
         return new FlickrServiceResponse<>(e, e.getErrorCode(), e.getErrorMessage());
+    }
+
+    @FunctionalInterface
+    private interface FlickrCall<T> {
+        T execute() throws FlickrException;
     }
 }
