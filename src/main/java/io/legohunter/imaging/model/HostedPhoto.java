@@ -8,4 +8,7 @@ import lombok.Data;
 public class HostedPhoto {
     private String id;
     private String title;
+    private String description;
+    private String url;
+    private Boolean primary;
 }

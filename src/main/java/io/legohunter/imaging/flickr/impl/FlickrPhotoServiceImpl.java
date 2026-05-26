@@ -4,8 +4,11 @@ import com.flickr4java.flickr.Flickr;
 import com.flickr4java.flickr.FlickrException;
 import com.flickr4java.flickr.RequestContext;
 import com.flickr4java.flickr.auth.Auth;
+import com.flickr4java.flickr.photos.Extras;
 import com.flickr4java.flickr.photos.Photo;
+import com.flickr4java.flickr.photos.PhotoList;
 import com.flickr4java.flickr.photos.PhotosInterface;
+import com.flickr4java.flickr.photosets.Photosets;
 import com.flickr4java.flickr.photosets.Photoset;
 import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import com.flickr4java.flickr.uploader.IUploader;
@@ -15,10 +18,14 @@ import io.legohunter.imaging.flickr.api.FlickrPhotoService;
 import io.legohunter.imaging.flickr.model.FlickrServiceResponse;
 import io.legohunter.imaging.model.AlbumManifest;
 import io.legohunter.imaging.model.HostedAlbum;
+import io.legohunter.imaging.model.HostedAlbumPage;
+import io.legohunter.imaging.model.HostedAlbumPhotoSearchRequest;
+import io.legohunter.imaging.model.HostedAlbumSearchRequest;
 import io.legohunter.imaging.model.HostedAlbumMembershipRequest;
 import io.legohunter.imaging.model.HostedAlbumMetadataUpdate;
 import io.legohunter.imaging.model.HostedPhoto;
 import io.legohunter.imaging.model.HostedPhotoMetadataUpdate;
+import io.legohunter.imaging.model.HostedPhotoPage;
 import io.legohunter.imaging.model.PhotoMetaDataV1;
 import io.legohunter.imaging.model.PhotoServiceErrorType;
 import io.legohunter.imaging.model.PhotoServiceRequest;
@@ -30,6 +37,9 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
@@ -109,6 +119,63 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
             response = new FlickrServiceResponse<>(HostedAlbum.builder()
                     .id(photoset.getId())
                     .url(photoset.getUrl())
+                    .build());
+        } catch (FlickrException e) {
+            response = flickrError(e);
+        }
+        log.debug("Flickr Response [{}]", response);
+        return response;
+    }
+
+    @Override
+    public PhotoServiceResponse<HostedAlbumPage> listAlbums(PhotoServiceRequest<HostedAlbumSearchRequest> request) {
+        PhotoServiceResponse<HostedAlbumPage> response;
+        HostedAlbumSearchRequest searchRequest = request.get();
+        try {
+            Photosets photosets = withFlickrAuth(() -> photosetsInterface.getList(
+                    searchRequest.getUserId(),
+                    positiveOrZero(searchRequest.getPerPage()),
+                    positiveOrZero(searchRequest.getPage()),
+                    null
+            ));
+            response = new FlickrServiceResponse<>(HostedAlbumPage.builder()
+                    .albums(Optional.ofNullable(photosets.getPhotosets()).orElse(Collections.emptyList()).stream()
+                            .map(this::toHostedAlbum)
+                            .toList())
+                    .page(photosets.getPage())
+                    .pages(photosets.getPages())
+                    .perPage(photosets.getPerPage())
+                    .total(photosets.getTotal())
+                    .build());
+        } catch (FlickrException e) {
+            response = flickrError(e);
+        }
+        log.debug("Flickr Response [{}]", response);
+        return response;
+    }
+
+    @Override
+    public PhotoServiceResponse<HostedPhotoPage> listAlbumPhotos(PhotoServiceRequest<HostedAlbumPhotoSearchRequest> request) {
+        PhotoServiceResponse<HostedPhotoPage> response;
+        HostedAlbumPhotoSearchRequest searchRequest = request.get();
+        try {
+            PhotoList<Photo> photos = withFlickrAuth(() -> photosetsInterface.getPhotos(
+                    searchRequest.getAlbumId(),
+                    Set.of(Extras.DATE_UPLOAD, Extras.URL_M, Extras.URL_O),
+                    Flickr.PRIVACY_LEVEL_NO_FILTER,
+                    positiveOrZero(searchRequest.getPerPage()),
+                    positiveOrZero(searchRequest.getPage())
+            ));
+            response = new FlickrServiceResponse<>(HostedPhotoPage.builder()
+                    .photos(Optional.ofNullable(photos)
+                            .map(PhotoList::stream)
+                            .orElseGet(Stream::empty)
+                            .map(this::toHostedPhoto)
+                            .toList())
+                    .page(photos.getPage())
+                    .pages(photos.getPages())
+                    .perPage(photos.getPerPage())
+                    .total(photos.getTotal())
                     .build());
         } catch (FlickrException e) {
             response = flickrError(e);
@@ -212,6 +279,34 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
         uploadMetaData.setTags(Collections.emptyList());
         uploadMetaData.setTitle("Title [" + photoMetaData.getFilename() + "]");
         return uploadMetaData;
+    }
+
+    private HostedAlbum toHostedAlbum(Photoset photoset) {
+        return HostedAlbum.builder()
+                .id(photoset.getId())
+                .url(photoset.getUrl())
+                .title(photoset.getTitle())
+                .description(photoset.getDescription())
+                .primaryPhotoId(photoset.getPrimaryPhoto() == null ? null : photoset.getPrimaryPhoto().getId())
+                .photoCount(photoset.getPhotoCount())
+                .build();
+    }
+
+    private HostedPhoto toHostedPhoto(Photo photo) {
+        return HostedPhoto.builder()
+                .id(photo.getId())
+                .title(photo.getTitle())
+                .description(photo.getDescription())
+                .url(photo.getUrl())
+                .primary(photo.isPrimary())
+                .build();
+    }
+
+    private int positiveOrZero(Integer value) {
+        if (value == null || value < 1) {
+            return 0;
+        }
+        return value;
     }
 
     private <T> T withFlickrAuth(FlickrCall<T> call) throws FlickrException {
