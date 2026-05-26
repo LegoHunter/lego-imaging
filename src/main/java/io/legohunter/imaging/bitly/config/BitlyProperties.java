@@ -28,7 +28,7 @@ import java.util.Optional;
 public class BitlyProperties {
     private Path clientConfigDir;
     private Path clientConfigFile;
-    private Bitly bitly;
+    private Bitly bitly = new Bitly();
 
     public void setClientConfigDir(Path clientConfigDir) {
         this.clientConfigDir = clientConfigDir;
@@ -65,9 +65,10 @@ public class BitlyProperties {
     @JsonRootName(value = "bitly")
     public static class Bitly {
         private String accessToken;
+        private String groupGuid;
         @JsonProperty(value = "oauth2")
         private OAuth2 oAuth2;
-        private String baseUrl;
+        private String baseUrl = "https://api-ssl.bitly.com/v4";
     }
 
     @Data
