@@ -227,6 +227,26 @@ class FlickrPhotoServiceTest {
     }
 
     @Test
+    void listAlbums_handlesNullProviderResponse() throws Exception {
+        when(photosetsInterface.getList("user-123", 1, 1, null)).thenReturn(null);
+
+        PhotoServiceResponse<HostedAlbumPage> response = flickrPhotoService.listAlbums(new FlickrServiceRequest<>(
+                HostedAlbumSearchRequest.builder()
+                        .userId("user-123")
+                        .page(1)
+                        .perPage(1)
+                        .build()
+        ));
+
+        assertThat(response.isError()).isFalse();
+        assertThat(response.get().getAlbums()).isEmpty();
+        assertThat(response.get().getPage()).isZero();
+        assertThat(response.get().getPages()).isZero();
+        assertThat(response.get().getPerPage()).isZero();
+        assertThat(response.get().getTotal()).isZero();
+    }
+
+    @Test
     void listAlbumPhotos_mapsFlickrPhotos() throws Exception {
         Photo photo = new Photo();
         photo.setId("photo-1");
@@ -265,6 +285,27 @@ class FlickrPhotoServiceTest {
                         HostedPhoto::getPrimary
                 )
                 .containsExactly("photo-1", "front.jpg", "Front view", "https://flickr.com/photos/user/photo-1", true);
+    }
+
+    @Test
+    void listAlbumPhotos_handlesNullProviderResponse() throws Exception {
+        when(photosetsInterface.getPhotos(eq("album-123"), any(), eq(Flickr.PRIVACY_LEVEL_NO_FILTER), eq(500), eq(1)))
+                .thenReturn(null);
+
+        PhotoServiceResponse<HostedPhotoPage> response = flickrPhotoService.listAlbumPhotos(new FlickrServiceRequest<>(
+                HostedAlbumPhotoSearchRequest.builder()
+                        .albumId("album-123")
+                        .page(1)
+                        .perPage(500)
+                        .build()
+        ));
+
+        assertThat(response.isError()).isFalse();
+        assertThat(response.get().getPhotos()).isEmpty();
+        assertThat(response.get().getPage()).isZero();
+        assertThat(response.get().getPages()).isZero();
+        assertThat(response.get().getPerPage()).isZero();
+        assertThat(response.get().getTotal()).isZero();
     }
 
     @Test

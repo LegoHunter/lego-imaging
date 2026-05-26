@@ -139,13 +139,15 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
                     null
             ));
             response = new FlickrServiceResponse<>(HostedAlbumPage.builder()
-                    .albums(Optional.ofNullable(photosets.getPhotosets()).orElse(Collections.emptyList()).stream()
+                    .albums(Optional.ofNullable(photosets)
+                            .map(Photosets::getPhotosets)
+                            .orElse(Collections.emptyList()).stream()
                             .map(this::toHostedAlbum)
                             .toList())
-                    .page(photosets.getPage())
-                    .pages(photosets.getPages())
-                    .perPage(photosets.getPerPage())
-                    .total(photosets.getTotal())
+                    .page(photosets == null ? 0 : photosets.getPage())
+                    .pages(photosets == null ? 0 : photosets.getPages())
+                    .perPage(photosets == null ? 0 : photosets.getPerPage())
+                    .total(photosets == null ? 0 : photosets.getTotal())
                     .build());
         } catch (FlickrException e) {
             response = flickrError(e);
@@ -172,10 +174,10 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
                             .orElseGet(Stream::empty)
                             .map(this::toHostedPhoto)
                             .toList())
-                    .page(photos.getPage())
-                    .pages(photos.getPages())
-                    .perPage(photos.getPerPage())
-                    .total(photos.getTotal())
+                    .page(photos == null ? 0 : photos.getPage())
+                    .pages(photos == null ? 0 : photos.getPages())
+                    .perPage(photos == null ? 0 : photos.getPerPage())
+                    .total(photos == null ? 0 : photos.getTotal())
                     .build());
         } catch (FlickrException e) {
             response = flickrError(e);
