@@ -6,7 +6,9 @@ import com.flickr4java.flickr.RequestContext;
 import com.flickr4java.flickr.auth.Auth;
 import com.flickr4java.flickr.auth.Permission;
 import com.flickr4java.flickr.photos.Photo;
+import com.flickr4java.flickr.photos.PhotoList;
 import com.flickr4java.flickr.photos.PhotosInterface;
+import com.flickr4java.flickr.photosets.Photosets;
 import com.flickr4java.flickr.photosets.Photoset;
 import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import com.flickr4java.flickr.uploader.IUploader;
@@ -14,10 +16,14 @@ import com.flickr4java.flickr.uploader.UploadMetaData;
 import io.legohunter.imaging.flickr.model.FlickrServiceRequest;
 import io.legohunter.imaging.model.AlbumManifest;
 import io.legohunter.imaging.model.HostedAlbum;
+import io.legohunter.imaging.model.HostedAlbumPage;
+import io.legohunter.imaging.model.HostedAlbumPhotoSearchRequest;
+import io.legohunter.imaging.model.HostedAlbumSearchRequest;
 import io.legohunter.imaging.model.HostedAlbumMembershipRequest;
 import io.legohunter.imaging.model.HostedAlbumMetadataUpdate;
 import io.legohunter.imaging.model.HostedPhoto;
 import io.legohunter.imaging.model.HostedPhotoMetadataUpdate;
+import io.legohunter.imaging.model.HostedPhotoPage;
 import io.legohunter.imaging.model.PhotoMetaDataV1;
 import io.legohunter.imaging.model.PhotoServiceErrorType;
 import io.legohunter.imaging.model.PhotoServiceResponse;
@@ -167,6 +173,114 @@ class FlickrPhotoServiceTest {
         assertThat(response.get().getId()).isEqualTo("album-123");
         assertThat(response.get().getUrl()).isEqualTo("https://www.flickr.com/photos/user/albums/album-123");
         verify(photosetsInterface).create("album title", "album description", "primary-photo");
+    }
+
+    @Test
+    void listAlbums_mapsFlickrPhotosets() throws Exception {
+        Photoset photoset = new Photoset();
+        photoset.setId("album-123");
+        photoset.setUrl("https://www.flickr.com/photos/user/sets/album-123/");
+        photoset.setTitle("4558-1 - Metroliner");
+        photoset.setDescription("inventory-uuid");
+        photoset.setPhotoCount(2);
+        Photo primaryPhoto = new Photo();
+        primaryPhoto.setId("photo-1");
+        photoset.setPrimaryPhoto(primaryPhoto);
+        Photosets photosets = new Photosets();
+        photosets.setPhotosets(List.of(photoset));
+        photosets.setPage(1);
+        photosets.setPages(3);
+        photosets.setPerPage(1);
+        photosets.setTotal(3);
+        when(photosetsInterface.getList("user-123", 1, 1, null)).thenReturn(photosets);
+
+        PhotoServiceResponse<HostedAlbumPage> response = flickrPhotoService.listAlbums(new FlickrServiceRequest<>(
+                HostedAlbumSearchRequest.builder()
+                        .userId("user-123")
+                        .page(1)
+                        .perPage(1)
+                        .build()
+        ));
+
+        assertThat(response.isError()).isFalse();
+        assertThat(response.get().getPage()).isEqualTo(1);
+        assertThat(response.get().getPages()).isEqualTo(3);
+        assertThat(response.get().getPerPage()).isEqualTo(1);
+        assertThat(response.get().getTotal()).isEqualTo(3);
+        assertThat(response.get().getAlbums()).singleElement()
+                .extracting(
+                        HostedAlbum::getId,
+                        HostedAlbum::getUrl,
+                        HostedAlbum::getTitle,
+                        HostedAlbum::getDescription,
+                        HostedAlbum::getPrimaryPhotoId,
+                        HostedAlbum::getPhotoCount
+                )
+                .containsExactly(
+                        "album-123",
+                        "https://www.flickr.com/photos/user/sets/album-123/",
+                        "4558-1 - Metroliner",
+                        "inventory-uuid",
+                        "photo-1",
+                        2
+                );
+    }
+
+    @Test
+    void listAlbumPhotos_mapsFlickrPhotos() throws Exception {
+        Photo photo = new Photo();
+        photo.setId("photo-1");
+        photo.setTitle("front.jpg");
+        photo.setDescription("Front view");
+        photo.setUrl("https://flickr.com/photos/user/photo-1");
+        photo.setPrimary(true);
+        PhotoList<Photo> photos = new PhotoList<>();
+        photos.add(photo);
+        photos.setPage(1);
+        photos.setPages(1);
+        photos.setPerPage(500);
+        photos.setTotal(1);
+        when(photosetsInterface.getPhotos(eq("album-123"), any(), eq(Flickr.PRIVACY_LEVEL_NO_FILTER), eq(500), eq(1)))
+                .thenReturn(photos);
+
+        PhotoServiceResponse<HostedPhotoPage> response = flickrPhotoService.listAlbumPhotos(new FlickrServiceRequest<>(
+                HostedAlbumPhotoSearchRequest.builder()
+                        .albumId("album-123")
+                        .page(1)
+                        .perPage(500)
+                        .build()
+        ));
+
+        assertThat(response.isError()).isFalse();
+        assertThat(response.get().getPage()).isEqualTo(1);
+        assertThat(response.get().getPages()).isEqualTo(1);
+        assertThat(response.get().getPerPage()).isEqualTo(500);
+        assertThat(response.get().getTotal()).isEqualTo(1);
+        assertThat(response.get().getPhotos()).singleElement()
+                .extracting(
+                        HostedPhoto::getId,
+                        HostedPhoto::getTitle,
+                        HostedPhoto::getDescription,
+                        HostedPhoto::getUrl,
+                        HostedPhoto::getPrimary
+                )
+                .containsExactly("photo-1", "front.jpg", "Front view", "https://flickr.com/photos/user/photo-1", true);
+    }
+
+    @Test
+    void listAlbums_mapsProviderError() throws Exception {
+        when(photosetsInterface.getList("user-123", 0, 0, null))
+                .thenThrow(new FlickrException("99", "provider rejected album list"));
+
+        PhotoServiceResponse<HostedAlbumPage> response = flickrPhotoService.listAlbums(new FlickrServiceRequest<>(
+                HostedAlbumSearchRequest.builder()
+                        .userId("user-123")
+                        .build()
+        ));
+
+        assertThat(response.isError()).isTrue();
+        assertThat(response.responseCode()).isEqualTo(99);
+        assertThat(response.responseMessage()).isEqualTo("provider rejected album list");
     }
 
     @Test
