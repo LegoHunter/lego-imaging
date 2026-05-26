@@ -6,10 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import io.legohunter.imaging.bitly.exception.BitlyException;
-import io.legohunter.imaging.bitly.api.BitlinksAPI;
-import io.legohunter.imaging.bitly.model.bitly.BitlyError;
-import io.legohunter.imaging.bitly.impl.BitlinksService;
 import feign.Feign;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
@@ -19,6 +15,10 @@ import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import feign.okhttp.OkHttpClient;
 import feign.slf4j.Slf4jLogger;
+import io.legohunter.imaging.bitly.api.BitlinksAPI;
+import io.legohunter.imaging.bitly.exception.BitlyException;
+import io.legohunter.imaging.bitly.impl.BitlinksService;
+import io.legohunter.imaging.bitly.model.bitly.BitlyError;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -52,7 +52,7 @@ public class BitlyConfiguration {
     @Bean
     public BitlinksAPI bitlinksAPI(@Qualifier("bitlyObjectMapper") ObjectMapper bitlyObjectMapper, BitlyProperties bitlyProperties) {
         return builder(bitlyObjectMapper, bitlyProperties)
-                .target(BitlinksAPI.class, bitlyProperties.getBitly().getBaseUrl());
+                .target(BitlinksAPI.class, bitlyProperties.getBaseUrl());
     }
 
     private Feign.Builder builder(@Qualifier("bitlyObjectMapper") ObjectMapper bitlyObjectMapper, BitlyProperties bitlyProperties) {
@@ -63,7 +63,7 @@ public class BitlyConfiguration {
                     .encoder(new JacksonEncoder(bitlyObjectMapper))
                     .decoder(new JacksonDecoder(bitlyObjectMapper))
                     .errorDecoder(new BitlyErrorDecoder(bitlyObjectMapper))
-                    .requestInterceptor(new OAuthRequestInterceptor(bitlyProperties.getBitly().getAccessToken()))
+                    .requestInterceptor(new OAuthRequestInterceptor(bitlyProperties.getAccessToken()))
                     .logger(new Slf4jLogger(BitlinksAPI.class))
                     .logLevel(feign.Logger.Level.FULL);
 
