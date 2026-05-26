@@ -15,6 +15,7 @@ import io.legohunter.imaging.flickr.model.FlickrServiceRequest;
 import io.legohunter.imaging.model.AlbumManifest;
 import io.legohunter.imaging.model.HostedAlbum;
 import io.legohunter.imaging.model.HostedAlbumMembershipRequest;
+import io.legohunter.imaging.model.HostedAlbumMetadataUpdate;
 import io.legohunter.imaging.model.HostedPhoto;
 import io.legohunter.imaging.model.HostedPhotoMetadataUpdate;
 import io.legohunter.imaging.model.PhotoMetaDataV1;
@@ -179,6 +180,38 @@ class FlickrPhotoServiceTest {
 
         assertThat(response.isError()).isFalse();
         verify(photosetsInterface).editPhotos("album-123", "photo-1", new String[]{"photo-1", "photo-2"});
+    }
+
+    @Test
+    void updateAlbumMetadata_editsPhotosetMetadata() throws Exception {
+        HostedAlbumMetadataUpdate request = HostedAlbumMetadataUpdate.builder()
+                .albumId("album-123")
+                .title("4558-1 - Metroliner")
+                .description("Inventory item [inventory-uuid]")
+                .build();
+
+        PhotoServiceResponse<Void> response = flickrPhotoService.updateAlbumMetadata(new FlickrServiceRequest<>(request));
+
+        assertThat(response.isError()).isFalse();
+        verify(photosetsInterface).editMeta("album-123", "4558-1 - Metroliner", "Inventory item [inventory-uuid]");
+    }
+
+    @Test
+    void updateAlbumMetadata_mapsProviderError() throws Exception {
+        HostedAlbumMetadataUpdate request = HostedAlbumMetadataUpdate.builder()
+                .albumId("album-123")
+                .title("4558-1 - Metroliner")
+                .description("Inventory item [inventory-uuid]")
+                .build();
+        doThrow(new FlickrException("97", "album metadata rejected"))
+                .when(photosetsInterface)
+                .editMeta("album-123", "4558-1 - Metroliner", "Inventory item [inventory-uuid]");
+
+        PhotoServiceResponse<Void> response = flickrPhotoService.updateAlbumMetadata(new FlickrServiceRequest<>(request));
+
+        assertThat(response.isError()).isTrue();
+        assertThat(response.responseCode()).isEqualTo(97);
+        assertThat(response.responseMessage()).isEqualTo("album metadata rejected");
     }
 
     @Test
