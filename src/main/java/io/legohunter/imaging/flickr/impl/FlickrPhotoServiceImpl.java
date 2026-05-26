@@ -20,6 +20,7 @@ import io.legohunter.imaging.model.HostedAlbumMetadataUpdate;
 import io.legohunter.imaging.model.HostedPhoto;
 import io.legohunter.imaging.model.HostedPhotoMetadataUpdate;
 import io.legohunter.imaging.model.PhotoMetaDataV1;
+import io.legohunter.imaging.model.PhotoServiceErrorType;
 import io.legohunter.imaging.model.PhotoServiceRequest;
 import io.legohunter.imaging.model.PhotoServiceResponse;
 import lombok.RequiredArgsConstructor;
@@ -225,7 +226,15 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
     }
 
     private <T> PhotoServiceResponse<T> flickrError(FlickrException e) {
-        return new FlickrServiceResponse<>(e, e.getErrorCode(), e.getErrorMessage());
+        return new FlickrServiceResponse<>(e, e.getErrorCode(), e.getErrorMessage(), flickrErrorType(e));
+    }
+
+    private PhotoServiceErrorType flickrErrorType(FlickrException e) {
+        String message = e.getErrorMessage();
+        if (message != null && message.equalsIgnoreCase("Photoset not found")) {
+            return PhotoServiceErrorType.ALBUM_NOT_FOUND;
+        }
+        return PhotoServiceErrorType.UNKNOWN;
     }
 
     @FunctionalInterface

@@ -19,6 +19,7 @@ import io.legohunter.imaging.model.HostedAlbumMetadataUpdate;
 import io.legohunter.imaging.model.HostedPhoto;
 import io.legohunter.imaging.model.HostedPhotoMetadataUpdate;
 import io.legohunter.imaging.model.PhotoMetaDataV1;
+import io.legohunter.imaging.model.PhotoServiceErrorType;
 import io.legohunter.imaging.model.PhotoServiceResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -180,6 +181,24 @@ class FlickrPhotoServiceTest {
 
         assertThat(response.isError()).isFalse();
         verify(photosetsInterface).editPhotos("album-123", "photo-1", new String[]{"photo-1", "photo-2"});
+    }
+
+    @Test
+    void updateAlbumMembership_mapsMissingPhotosetToAlbumNotFoundErrorType() throws Exception {
+        HostedAlbumMembershipRequest request = HostedAlbumMembershipRequest.builder()
+                .albumId("missing-album")
+                .primaryPhotoId("photo-1")
+                .photoIds(new LinkedHashSet<>(List.of("photo-1", "photo-2")))
+                .build();
+        doThrow(new FlickrException("1", "Photoset not found"))
+                .when(photosetsInterface)
+                .editPhotos("missing-album", "photo-1", new String[]{"photo-1", "photo-2"});
+
+        PhotoServiceResponse<Void> response = flickrPhotoService.updateAlbumMembership(new FlickrServiceRequest<>(request));
+
+        assertThat(response.isError()).isTrue();
+        assertThat(response.errorType()).isEqualTo(PhotoServiceErrorType.ALBUM_NOT_FOUND);
+        assertThat(response.responseMessage()).isEqualTo("Photoset not found");
     }
 
     @Test
