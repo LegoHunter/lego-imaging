@@ -173,6 +173,79 @@ class MetadataExtractorServiceTest {
     }
 
     @Test
+    void toImageMetadata_shouldDefineFlickrPhase3KeywordTaxonomy() {
+        ImageMetadata metadata = service.toImageMetadata(
+                Map.of(
+                        "uuid", "uuid-1",
+                        "bl", "3001",
+                        "primary", "primary",
+                        "sealed", "false",
+                        "bo", "true",
+                        "bc", "M",
+                        "ic", "E",
+                        "item", "VG"
+                ),
+                "Displayed caption"
+        );
+
+        assertThat(metadata.uuid()).isEqualTo("uuid-1");
+        assertThat(metadata.externalItemNumber()).isEqualTo("3001");
+        assertThat(metadata.primary()).isTrue();
+        assertThat(metadata.sealed()).isFalse();
+        assertThat(metadata.builtOnce()).isTrue();
+        assertThat(metadata.boxCondition()).isEqualTo(ConditionEnum.M);
+        assertThat(metadata.instructionsCondition()).isEqualTo(ConditionEnum.E);
+        assertThat(metadata.itemCondition()).isEqualTo(ConditionEnum.VG);
+        assertThat(metadata.caption()).isEqualTo("Displayed caption");
+        assertThat(metadata.hasInventoryUpdates()).isTrue();
+        assertThat(metadata.hasPhotoUpdates()).isTrue();
+    }
+
+    @Test
+    void toImageMetadata_shouldTreatCpAsLegacyCaptionFallback() {
+        ImageMetadata metadata = service.toImageMetadata(
+                Map.of(
+                        "uuid", "uuid-1",
+                        "bl", "3001",
+                        "cp", " Legacy caption "
+                ),
+                null
+        );
+
+        assertThat(metadata.caption()).isEqualTo("Legacy caption");
+    }
+
+    @Test
+    void toImageMetadata_shouldPreferExplicitCaptionOverLegacyCpKeyword() {
+        ImageMetadata metadata = service.toImageMetadata(
+                Map.of(
+                        "uuid", "uuid-1",
+                        "bl", "3001",
+                        "cp", "Legacy caption"
+                ),
+                "Current caption"
+        );
+
+        assertThat(metadata.caption()).isEqualTo("Current caption");
+    }
+
+    @Test
+    void toImageMetadata_shouldIgnoreLegacyRemarkKeywords() {
+        ImageMetadata metadata = service.toImageMetadata(
+                Map.of(
+                        "uuid", "uuid-1",
+                        "bl", "3001",
+                        "rmk1", "Remark one",
+                        "rmk2", "Remark two"
+                ),
+                null
+        );
+
+        assertThat(metadata.caption()).isNull();
+        assertThat(metadata.hasPhotoUpdates()).isFalse();
+    }
+
+    @Test
     void toImageMetadata_shouldSupportAliasKeys() {
         ImageMetadata metadata = service.toImageMetadata(
                 Map.of(

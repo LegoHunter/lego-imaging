@@ -91,6 +91,14 @@ public class MetadataExtractorService {
     }
 
     ImageMetadata toImageMetadata(Map<String, String> keywords, String caption) {
+        String normalizedCaption =
+                trimToNull(caption);
+
+        if (normalizedCaption == null) {
+            normalizedCaption =
+                    trimToNull(keywordValue(keywords, "cp").orElse(null));
+        }
+
         return new ImageMetadata(
                 trimToNull(keywordValue(keywords, "uuid").orElse(null)),
                 trimToNull(keywordValue(keywords, "bl").orElse(null)),
@@ -100,7 +108,7 @@ public class MetadataExtractorService {
                 parseConditionKeyword(keywords, "bc", "box_condition", "boxcondition", "box-condition"),
                 parseConditionKeyword(keywords, "ic", "instructions_condition", "instructionscondition", "instructions-condition"),
                 parseConditionKeyword(keywords, "item", "item_condition", "itemcondition", "item-condition"),
-                trimToNull(caption)
+                normalizedCaption
         );
     }
 
