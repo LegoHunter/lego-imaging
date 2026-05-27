@@ -23,6 +23,7 @@ import io.legohunter.imaging.model.HostedAlbumMembershipRequest;
 import io.legohunter.imaging.model.HostedAlbumMetadataUpdate;
 import io.legohunter.imaging.model.HostedPhoto;
 import io.legohunter.imaging.model.HostedPhotoMetadataUpdate;
+import io.legohunter.imaging.model.HostedPhotoUploadMetadata;
 import io.legohunter.imaging.model.HostedPhotoPage;
 import io.legohunter.imaging.model.PhotoMetaDataV1;
 import io.legohunter.imaging.model.PhotoServiceErrorType;
@@ -96,6 +97,40 @@ class FlickrPhotoServiceTest {
         assertThat(metadata.isHidden()).isFalse();
         assertThat(metadata.getSafetyLevel()).isEqualTo(Flickr.SAFETYLEVEL_SAFE);
         assertThat(metadata.getTags()).isEmpty();
+    }
+
+    @Test
+    void uploadPhoto_usesSuppliedPublishingMetadata(@TempDir Path tempDir) throws Exception {
+        Path photoPath = tempDir.resolve("photo.jpg");
+        Files.write(photoPath, new byte[]{1, 2, 3});
+        when(uploader.upload(any(byte[].class), any(UploadMetaData.class))).thenReturn("photo-123");
+        PhotoMetaDataV1 photoMetaData = new PhotoMetaDataV1(photoPath);
+        photoMetaData.setUploadMetadata(HostedPhotoUploadMetadata.builder()
+                .title("Custom title")
+                .description("Custom description")
+                .tag("lego")
+                .tag("sealed")
+                .publicFlag(false)
+                .friendFlag(true)
+                .familyFlag(true)
+                .hidden(true)
+                .safetyLevel("restricted")
+                .build());
+
+        PhotoServiceResponse<String> response = flickrPhotoService.uploadPhoto(new FlickrServiceRequest<>(photoMetaData));
+
+        assertThat(response.isError()).isFalse();
+        org.mockito.ArgumentCaptor<UploadMetaData> metadataCaptor = org.mockito.ArgumentCaptor.forClass(UploadMetaData.class);
+        verify(uploader).upload(eq(new byte[]{1, 2, 3}), metadataCaptor.capture());
+        UploadMetaData metadata = metadataCaptor.getValue();
+        assertThat(metadata.getTitle()).isEqualTo("Custom title");
+        assertThat(metadata.getDescription()).isEqualTo("Custom description");
+        assertThat(metadata.getTags()).containsExactly("lego", "sealed");
+        assertThat(metadata.isPublicFlag()).isFalse();
+        assertThat(metadata.isFriendFlag()).isTrue();
+        assertThat(metadata.isFamilyFlag()).isTrue();
+        assertThat(metadata.isHidden()).isTrue();
+        assertThat(metadata.getSafetyLevel()).isEqualTo(Flickr.SAFETYLEVEL_RESTRICTED);
     }
 
     @Test
