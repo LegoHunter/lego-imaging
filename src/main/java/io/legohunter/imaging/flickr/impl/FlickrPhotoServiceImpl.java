@@ -64,7 +64,7 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
         } catch (FlickrException e) {
             response = flickrError(e);
         } catch (IOException e) {
-            response = new FlickrServiceResponse<>(e);
+            response = new FlickrServiceResponse<>(e, FlickrServiceResponse.INTERNAL_ERROR_CODE, e.getMessage(), PhotoServiceErrorType.VALIDATION_FAILED);
         }
         log.debug("Flickr Response [{}]", response);
         return response;
@@ -81,7 +81,7 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
         } catch (FlickrException e) {
             response = flickrError(e);
         } catch (IOException e) {
-            response = new FlickrServiceResponse<>(e);
+            response = new FlickrServiceResponse<>(e, FlickrServiceResponse.INTERNAL_ERROR_CODE, e.getMessage(), PhotoServiceErrorType.VALIDATION_FAILED);
         }
         log.debug("Flickr Response [{}]", response);
         return response;
@@ -327,11 +327,60 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
     }
 
     private PhotoServiceErrorType flickrErrorType(FlickrException e) {
-        String message = e.getErrorMessage();
-        if (message != null && message.equalsIgnoreCase("Photoset not found")) {
+        String code = e.getErrorCode();
+        String message = normalize(e.getErrorMessage());
+        if (message.contains("photoset not found")) {
             return PhotoServiceErrorType.ALBUM_NOT_FOUND;
         }
+        if (message.contains("primary") && message.contains("not found")) {
+            return PhotoServiceErrorType.PRIMARY_PHOTO_NOT_FOUND;
+        }
+        if (message.contains("photo not found")) {
+            return PhotoServiceErrorType.PHOTO_NOT_FOUND;
+        }
+        if ("100".equals(code) || message.contains("invalid api key")) {
+            return PhotoServiceErrorType.INVALID_API_KEY;
+        }
+        if (Set.of("95", "96", "97", "98").contains(code) || message.contains("auth token") || message.contains("signature")) {
+            return PhotoServiceErrorType.AUTHENTICATION_FAILED;
+        }
+        if ("99".equals(code) || message.contains("permission") || message.contains("not logged in")) {
+            return PhotoServiceErrorType.AUTHORIZATION_FAILED;
+        }
+        if ("105".equals(code) || message.contains("service unavailable") || message.contains("temporarily unavailable")) {
+            return PhotoServiceErrorType.SERVICE_UNAVAILABLE;
+        }
+        if (message.contains("rate limit") || message.contains("throttle")) {
+            return PhotoServiceErrorType.RATE_LIMITED;
+        }
+        if (message.contains("network") || message.contains("timeout") || message.contains("timed out")) {
+            return PhotoServiceErrorType.NETWORK_ERROR;
+        }
+        if ("106".equals(code) || message.contains("write failed") || message.contains("write operation")) {
+            return PhotoServiceErrorType.WRITE_FAILED;
+        }
+        if (message.contains("file too large")) {
+            return PhotoServiceErrorType.FILE_TOO_LARGE;
+        }
+        if (message.contains("upload limit")) {
+            return PhotoServiceErrorType.UPLOAD_LIMIT_EXCEEDED;
+        }
+        if (message.contains("duplicate")) {
+            return PhotoServiceErrorType.DUPLICATE_UPLOAD;
+        }
+        if (message.contains("empty") && message.contains("photo")) {
+            return PhotoServiceErrorType.EMPTY_PHOTO_LIST;
+        }
+        if (message.contains("invalid")) {
+            return PhotoServiceErrorType.VALIDATION_FAILED;
+        }
         return PhotoServiceErrorType.UNKNOWN;
+    }
+
+    private String normalize(String message) {
+        return Optional.ofNullable(message)
+                .map(value -> value.trim().toLowerCase())
+                .orElse("");
     }
 
     @FunctionalInterface

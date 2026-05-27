@@ -59,6 +59,35 @@ class SyncReportTest {
         assertThat(result.getErrorType()).isNull();
     }
 
+    @Test
+    void actionResultCanExposeRetryAttempts() {
+        SyncActionResult result = SyncActionResult.builder()
+                .actionId("action-1")
+                .type(SyncActionType.UPDATE_ALBUM_METADATA)
+                .status(SyncActionStatus.FAILED)
+                .errorType(PhotoServiceErrorType.SERVICE_UNAVAILABLE)
+                .attempts(3)
+                .retried(true)
+                .retryable(true)
+                .build();
+
+        assertThat(result.getErrorType()).isEqualTo(PhotoServiceErrorType.SERVICE_UNAVAILABLE);
+        assertThat(result.getAttempts()).isEqualTo(3);
+        assertThat(result.isRetried()).isTrue();
+        assertThat(result.isRetryable()).isTrue();
+    }
+
+    @Test
+    void transientErrorTypesAreRetryable() {
+        assertThat(PhotoServiceErrorType.SERVICE_UNAVAILABLE.isRetryable()).isTrue();
+        assertThat(PhotoServiceErrorType.RATE_LIMITED.isRetryable()).isTrue();
+        assertThat(PhotoServiceErrorType.NETWORK_ERROR.isRetryable()).isTrue();
+        assertThat(PhotoServiceErrorType.WRITE_FAILED.isRetryable()).isTrue();
+        assertThat(PhotoServiceErrorType.AUTHENTICATION_FAILED.isRetryable()).isFalse();
+        assertThat(PhotoServiceErrorType.ALBUM_NOT_FOUND.isRetryable()).isFalse();
+        assertThat(PhotoServiceErrorType.VALIDATION_FAILED.isRetryable()).isFalse();
+    }
+
     private SyncActionResult result(String actionId, SyncActionStatus status) {
         return SyncActionResult.builder()
                 .actionId(actionId)

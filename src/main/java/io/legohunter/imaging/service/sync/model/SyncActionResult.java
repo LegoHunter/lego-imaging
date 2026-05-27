@@ -18,6 +18,9 @@ public class SyncActionResult {
     private Integer responseCode;
     private String message;
     private PhotoServiceErrorType errorType;
+    private int attempts;
+    private boolean retried;
+    private boolean retryable;
     private LocalDateTime startedAt;
     private LocalDateTime finishedAt;
 
