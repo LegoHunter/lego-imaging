@@ -25,6 +25,7 @@ import io.legohunter.imaging.model.HostedAlbumMembershipRequest;
 import io.legohunter.imaging.model.HostedAlbumMetadataUpdate;
 import io.legohunter.imaging.model.HostedPhoto;
 import io.legohunter.imaging.model.HostedPhotoMetadataUpdate;
+import io.legohunter.imaging.model.HostedPhotoUploadMetadata;
 import io.legohunter.imaging.model.HostedPhotoPage;
 import io.legohunter.imaging.model.PhotoMetaDataV1;
 import io.legohunter.imaging.model.PhotoServiceErrorType;
@@ -267,20 +268,43 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
     }
 
     private UploadMetaData uploadMetaData(PhotoMetaDataV1 photoMetaData) {
+        HostedPhotoUploadMetadata metadata = Optional.ofNullable(photoMetaData.getUploadMetadata())
+                .orElseGet(() -> HostedPhotoUploadMetadata.builder().build());
         UploadMetaData uploadMetaData = new UploadMetaData();
         uploadMetaData.setAsync(SYNC_UPLOAD);
         uploadMetaData.setContentType(Flickr.CONTENTTYPE_PHOTO);
-        uploadMetaData.setFamilyFlag(false);
+        uploadMetaData.setFamilyFlag(Boolean.TRUE.equals(metadata.getFamilyFlag()));
         uploadMetaData.setFilemimetype(JPEG_MIME_TYPE);
         uploadMetaData.setFilename(photoMetaData.getFilename().toString());
-        uploadMetaData.setDescription("Description [" + photoMetaData.getFilename() + "]");
-        uploadMetaData.setFriendFlag(false);
-        uploadMetaData.setHidden(false);
-        uploadMetaData.setPublicFlag(true);
-        uploadMetaData.setSafetyLevel(Flickr.SAFETYLEVEL_SAFE);
-        uploadMetaData.setTags(Collections.emptyList());
-        uploadMetaData.setTitle("Title [" + photoMetaData.getFilename() + "]");
+        uploadMetaData.setDescription(textOrEmpty(metadata.getDescription()));
+        uploadMetaData.setFriendFlag(Boolean.TRUE.equals(metadata.getFriendFlag()));
+        uploadMetaData.setHidden(Boolean.TRUE.equals(metadata.getHidden()));
+        uploadMetaData.setPublicFlag(!Boolean.FALSE.equals(metadata.getPublicFlag()));
+        uploadMetaData.setSafetyLevel(flickrSafetyLevel(metadata.getSafetyLevel()));
+        uploadMetaData.setTags(metadata.getTags());
+        uploadMetaData.setTitle(textOrDefault(metadata.getTitle(), photoMetaData.getFilename().toString()));
         return uploadMetaData;
+    }
+
+    private String flickrSafetyLevel(String safetyLevel) {
+        return Optional.ofNullable(safetyLevel)
+                .map(value -> switch (value.trim().toLowerCase()) {
+                    case "moderate" -> Flickr.SAFETYLEVEL_MODERATE;
+                    case "restricted" -> Flickr.SAFETYLEVEL_RESTRICTED;
+                    case "safe" -> Flickr.SAFETYLEVEL_SAFE;
+                    default -> value;
+                })
+                .orElse(Flickr.SAFETYLEVEL_SAFE);
+    }
+
+    private String textOrDefault(String value, String defaultValue) {
+        return Optional.ofNullable(value)
+                .filter(text -> !text.isBlank())
+                .orElse(defaultValue);
+    }
+
+    private String textOrEmpty(String value) {
+        return textOrDefault(value, "");
     }
 
     private HostedAlbum toHostedAlbum(Photoset photoset) {

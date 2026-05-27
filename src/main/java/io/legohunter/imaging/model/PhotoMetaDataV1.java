@@ -49,6 +49,9 @@ public class PhotoMetaDataV1 {
     private boolean primary;
     private boolean changed;
 
+    @JsonIgnore
+    private HostedPhotoUploadMetadata uploadMetadata;
+
     @JsonProperty("filename")
     public String getFilenameString() {
         return filename.getFileName().toString();
