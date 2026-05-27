@@ -1,0 +1,17 @@
+package io.legohunter.imaging.service.sync.model;
+
+public enum SyncActionType {
+    UPLOAD_PHOTO,
+    REPLACE_PHOTO,
+    DELETE_PHOTO,
+    CREATE_ALBUM,
+    UPDATE_ALBUM_METADATA,
+    UPDATE_ALBUM_MEMBERSHIP,
+    UPDATE_PHOTO_METADATA,
+    FIX_PRIMARY_PHOTO,
+    REPAIR_ALBUM_ID,
+    REPAIR_PHOTO_ID,
+    REBUILD_MANIFEST,
+    WRITE_MANIFEST,
+    SHORTEN_ALBUM_URL
+}
