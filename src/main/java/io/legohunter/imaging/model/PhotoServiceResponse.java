@@ -11,4 +11,8 @@ public interface PhotoServiceResponse<T> extends Supplier<T>, Consumer<T> {
     default PhotoServiceErrorType errorType() {
         return PhotoServiceErrorType.UNKNOWN;
     }
+
+    default boolean isRetryable() {
+        return isError() && errorType().isRetryable();
+    }
 }

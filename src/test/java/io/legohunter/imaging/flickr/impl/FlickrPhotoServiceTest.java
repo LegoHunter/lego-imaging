@@ -311,7 +311,7 @@ class FlickrPhotoServiceTest {
     @Test
     void listAlbums_mapsProviderError() throws Exception {
         when(photosetsInterface.getList("user-123", 0, 0, null))
-                .thenThrow(new FlickrException("99", "provider rejected album list"));
+                .thenThrow(new FlickrException("105", "Service unavailable"));
 
         PhotoServiceResponse<HostedAlbumPage> response = flickrPhotoService.listAlbums(new FlickrServiceRequest<>(
                 HostedAlbumSearchRequest.builder()
@@ -320,8 +320,10 @@ class FlickrPhotoServiceTest {
         ));
 
         assertThat(response.isError()).isTrue();
-        assertThat(response.responseCode()).isEqualTo(99);
-        assertThat(response.responseMessage()).isEqualTo("provider rejected album list");
+        assertThat(response.responseCode()).isEqualTo(105);
+        assertThat(response.responseMessage()).isEqualTo("Service unavailable");
+        assertThat(response.errorType()).isEqualTo(PhotoServiceErrorType.SERVICE_UNAVAILABLE);
+        assertThat(response.isRetryable()).isTrue();
     }
 
     @Test
@@ -449,6 +451,8 @@ class FlickrPhotoServiceTest {
         assertThat(response.isError()).isTrue();
         assertThat(response.responseCode()).isEqualTo(99);
         assertThat(response.responseMessage()).isEqualTo("Insufficient permissions");
+        assertThat(response.errorType()).isEqualTo(PhotoServiceErrorType.AUTHORIZATION_FAILED);
+        assertThat(response.isRetryable()).isFalse();
     }
 
     @Test
@@ -460,7 +464,39 @@ class FlickrPhotoServiceTest {
         assertThat(response.isError()).isTrue();
         assertThat(response.responseCode()).isEqualTo(-1);
         assertThat(response.responseMessage()).contains("missing.jpg");
+        assertThat(response.errorType()).isEqualTo(PhotoServiceErrorType.VALIDATION_FAILED);
+        assertThat(response.isRetryable()).isFalse();
         verifyNoInteractions(uploader);
+    }
+
+    @Test
+    void flickrException_mapsPhotoNotFoundErrors() throws Exception {
+        when(photosInterface.getPhoto("missing-photo"))
+                .thenThrow(new FlickrException("1", "Photo not found"));
+
+        PhotoServiceResponse<HostedPhoto> response = flickrPhotoService.getPhoto(new FlickrServiceRequest<>("missing-photo"));
+
+        assertThat(response.isError()).isTrue();
+        assertThat(response.errorType()).isEqualTo(PhotoServiceErrorType.PHOTO_NOT_FOUND);
+        assertThat(response.isRetryable()).isFalse();
+    }
+
+    @Test
+    void flickrException_mapsWriteFailureAsRetryable() throws Exception {
+        HostedAlbumMetadataUpdate request = HostedAlbumMetadataUpdate.builder()
+                .albumId("album-123")
+                .title("title")
+                .description("description")
+                .build();
+        doThrow(new FlickrException("106", "Write operation failed"))
+                .when(photosetsInterface)
+                .editMeta("album-123", "title", "description");
+
+        PhotoServiceResponse<Void> response = flickrPhotoService.updateAlbumMetadata(new FlickrServiceRequest<>(request));
+
+        assertThat(response.isError()).isTrue();
+        assertThat(response.errorType()).isEqualTo(PhotoServiceErrorType.WRITE_FAILED);
+        assertThat(response.isRetryable()).isTrue();
     }
 
     private PhotoMetaDataV1 primaryPhoto(String photoId) {
