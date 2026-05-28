@@ -1,7 +1,7 @@
 package io.legohunter.imaging.service.hosting.api;
 
-import io.legohunter.imaging.model.AlbumManifest;
 import io.legohunter.imaging.model.HostedAlbum;
+import io.legohunter.imaging.model.HostedAlbumCreateRequest;
 import io.legohunter.imaging.model.HostedAlbumPage;
 import io.legohunter.imaging.model.HostedAlbumPhotoSearchRequest;
 import io.legohunter.imaging.model.HostedAlbumSearchRequest;
@@ -21,7 +21,7 @@ public interface ImageHostingService {
 
     PhotoServiceResponse<Void> deletePhoto(PhotoServiceRequest<String> request);
 
-    PhotoServiceResponse<HostedAlbum> createAlbum(PhotoServiceRequest<AlbumManifest> request);
+    PhotoServiceResponse<HostedAlbum> createAlbum(PhotoServiceRequest<HostedAlbumCreateRequest> request);
 
     PhotoServiceResponse<HostedAlbumPage> listAlbums(PhotoServiceRequest<HostedAlbumSearchRequest> request);
 
