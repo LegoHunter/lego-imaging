@@ -4,6 +4,7 @@ import io.legohunter.imaging.config.LegoImagingProperties;
 import io.legohunter.imaging.exception.LegoImagingException;
 import io.legohunter.imaging.model.AlbumManifest;
 import io.legohunter.imaging.model.HostedAlbum;
+import io.legohunter.imaging.model.HostedAlbumCreateRequest;
 import io.legohunter.imaging.model.HostedAlbumMembershipRequest;
 import io.legohunter.imaging.model.PhotoMetaDataV1;
 import io.legohunter.imaging.bitly.model.bitly.ShortenRequest;
@@ -86,7 +87,7 @@ public class PhotoServiceUploadManagerImpl implements PhotoServiceUploadManager 
             String photosetId = Optional.ofNullable(a.getPhotosetId())
                     .orElseGet(() -> {
                         try {
-                            PhotoServiceResponse<HostedAlbum> response = imageHostingService.createAlbum(new SimplePhotoServiceRequest<>(a));
+                            PhotoServiceResponse<HostedAlbum> response = imageHostingService.createAlbum(new SimplePhotoServiceRequest<>(toCreateRequest(a)));
                             assertSuccess(response);
                             HostedAlbum album = response.get();
                             log.info("Created Photoset [{}] with primary photo id [{}] - filename [{}]", album, primaryPhotoId, primaryPhoto.getFilename());
@@ -126,5 +127,15 @@ public class PhotoServiceUploadManagerImpl implements PhotoServiceUploadManager 
         if (response.isError()) {
             throw new LegoImagingException(response.responseMessage());
         }
+    }
+
+    private HostedAlbumCreateRequest toCreateRequest(AlbumManifest albumManifest) {
+        PhotoMetaDataV1 primaryPhoto = albumManifest.getPrimaryPhoto();
+        return HostedAlbumCreateRequest.builder()
+                .title(albumManifest.getTitle())
+                .description(albumManifest.getDescription())
+                .primaryPhotoId(primaryPhoto.getPhotoId())
+                .photoIds(albumManifest.getPhotoIds())
+                .build();
     }
 }

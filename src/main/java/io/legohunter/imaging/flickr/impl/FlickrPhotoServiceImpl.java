@@ -16,8 +16,8 @@ import com.flickr4java.flickr.uploader.UploadMetaData;
 import io.legohunter.imaging.exception.LegoImagingException;
 import io.legohunter.imaging.flickr.api.FlickrPhotoService;
 import io.legohunter.imaging.flickr.model.FlickrServiceResponse;
-import io.legohunter.imaging.model.AlbumManifest;
 import io.legohunter.imaging.model.HostedAlbum;
+import io.legohunter.imaging.model.HostedAlbumCreateRequest;
 import io.legohunter.imaging.model.HostedAlbumPage;
 import io.legohunter.imaging.model.HostedAlbumPhotoSearchRequest;
 import io.legohunter.imaging.model.HostedAlbumSearchRequest;
@@ -105,18 +105,20 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
     }
 
     @Override
-    public PhotoServiceResponse<HostedAlbum> createAlbum(PhotoServiceRequest<AlbumManifest> request) throws LegoImagingException {
+    public PhotoServiceResponse<HostedAlbum> createAlbum(PhotoServiceRequest<HostedAlbumCreateRequest> request) throws LegoImagingException {
         PhotoServiceResponse<HostedAlbum> response;
-        AlbumManifest albumManifest = request.get();
+        HostedAlbumCreateRequest createRequest = request.get();
         try {
-            if (albumManifest.getPhotos().size() < 1) {
+            if (createRequest.getPhotoIds().isEmpty()) {
                 throw new LegoImagingException("Cannot create a Flickr Album that has no photos");
             }
-            PhotoMetaDataV1 primaryPhoto = albumManifest.getPrimaryPhoto();
+            if (textOrDefault(createRequest.getPrimaryPhotoId(), "").isBlank()) {
+                throw new LegoImagingException("Cannot create a Flickr Album without a primary photo id");
+            }
             Photoset photoset = withFlickrAuth(() -> photosetsInterface.create(
-                    albumManifest.getTitle(),
-                    albumManifest.getDescription(),
-                    primaryPhoto.getPhotoId()));
+                    createRequest.getTitle(),
+                    createRequest.getDescription(),
+                    createRequest.getPrimaryPhotoId()));
             response = new FlickrServiceResponse<>(HostedAlbum.builder()
                     .id(photoset.getId())
                     .url(photoset.getUrl())

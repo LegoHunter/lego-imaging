@@ -1,9 +1,9 @@
 package io.legohunter.imaging.flickr.model;
 
-import io.legohunter.imaging.model.AlbumManifest;
+import io.legohunter.imaging.model.HostedAlbumCreateRequest;
 
-public class CreatePhotoSetRequest extends FlickrServiceRequest<AlbumManifest> {
-    public CreatePhotoSetRequest(AlbumManifest albumManifest) {
-        super(albumManifest);
+public class CreatePhotoSetRequest extends FlickrServiceRequest<HostedAlbumCreateRequest> {
+    public CreatePhotoSetRequest(HostedAlbumCreateRequest request) {
+        super(request);
     }
 }

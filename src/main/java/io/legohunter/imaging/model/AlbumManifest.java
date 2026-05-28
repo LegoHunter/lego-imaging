@@ -26,11 +26,16 @@ import java.util.stream.Collectors;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+/**
+ * Legacy gen-1 local JSON manifest model.
+ * Gen-2 image hosting sync should use DB/S3-backed hosted models instead.
+ */
 @Getter
 @Setter
 @ToString
 @JsonInclude(Include.NON_NULL)
 @Slf4j
+@Deprecated(since = "1.4.0", forRemoval = false)
 public class AlbumManifest {
     private String photosetId;
     private String title;

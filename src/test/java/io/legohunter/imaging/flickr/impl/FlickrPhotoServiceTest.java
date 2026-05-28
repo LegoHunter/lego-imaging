@@ -14,8 +14,8 @@ import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import com.flickr4java.flickr.uploader.IUploader;
 import com.flickr4java.flickr.uploader.UploadMetaData;
 import io.legohunter.imaging.flickr.model.FlickrServiceRequest;
-import io.legohunter.imaging.model.AlbumManifest;
 import io.legohunter.imaging.model.HostedAlbum;
+import io.legohunter.imaging.model.HostedAlbumCreateRequest;
 import io.legohunter.imaging.model.HostedAlbumPage;
 import io.legohunter.imaging.model.HostedAlbumPhotoSearchRequest;
 import io.legohunter.imaging.model.HostedAlbumSearchRequest;
@@ -32,6 +32,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -84,7 +85,7 @@ class FlickrPhotoServiceTest {
         assertThat(response.isError()).isFalse();
         assertThat(response.responseCode()).isZero();
         assertThat(response.get()).isEqualTo("photo-123");
-        org.mockito.ArgumentCaptor<UploadMetaData> metadataCaptor = org.mockito.ArgumentCaptor.forClass(UploadMetaData.class);
+        ArgumentCaptor<UploadMetaData> metadataCaptor = ArgumentCaptor.forClass(UploadMetaData.class);
         verify(uploader).upload(eq(new byte[]{1, 2, 3}), metadataCaptor.capture());
         UploadMetaData metadata = metadataCaptor.getValue();
         assertThat(metadata.isAsync()).isFalse();
@@ -120,7 +121,7 @@ class FlickrPhotoServiceTest {
         PhotoServiceResponse<String> response = flickrPhotoService.uploadPhoto(new FlickrServiceRequest<>(photoMetaData));
 
         assertThat(response.isError()).isFalse();
-        org.mockito.ArgumentCaptor<UploadMetaData> metadataCaptor = org.mockito.ArgumentCaptor.forClass(UploadMetaData.class);
+        ArgumentCaptor<UploadMetaData> metadataCaptor = ArgumentCaptor.forClass(UploadMetaData.class);
         verify(uploader).upload(eq(new byte[]{1, 2, 3}), metadataCaptor.capture());
         UploadMetaData metadata = metadataCaptor.getValue();
         assertThat(metadata.getTitle()).isEqualTo("Custom title");
@@ -191,18 +192,20 @@ class FlickrPhotoServiceTest {
     }
 
     @Test
-    void createAlbum_createsPhotosetFromAlbumManifest() throws Exception {
+    void createAlbum_createsPhotosetFromHostedAlbumCreateRequest() throws Exception {
         Photoset photoset = new Photoset();
         photoset.setId("album-123");
         photoset.setUrl("https://www.flickr.com/photos/user/albums/album-123");
         when(photosetsInterface.create("album title", "album description", "primary-photo")).thenReturn(photoset);
 
-        AlbumManifest albumManifest = new AlbumManifest();
-        albumManifest.setTitle("album title");
-        albumManifest.setDescription("album description");
-        albumManifest.setPhotos(List.of(primaryPhoto("primary-photo")));
+        HostedAlbumCreateRequest request = HostedAlbumCreateRequest.builder()
+                .title("album title")
+                .description("album description")
+                .primaryPhotoId("primary-photo")
+                .photoId("primary-photo")
+                .build();
 
-        PhotoServiceResponse<HostedAlbum> response = flickrPhotoService.createAlbum(new FlickrServiceRequest<>(albumManifest));
+        PhotoServiceResponse<HostedAlbum> response = flickrPhotoService.createAlbum(new FlickrServiceRequest<>(request));
 
         assertThat(response.isError()).isFalse();
         assertThat(response.get().getId()).isEqualTo("album-123");
@@ -534,10 +537,4 @@ class FlickrPhotoServiceTest {
         assertThat(response.isRetryable()).isTrue();
     }
 
-    private PhotoMetaDataV1 primaryPhoto(String photoId) {
-        PhotoMetaDataV1 photoMetaData = new PhotoMetaDataV1(Path.of("photo.jpg"));
-        photoMetaData.setPhotoId(photoId);
-        photoMetaData.setPrimary(true);
-        return photoMetaData;
-    }
 }
