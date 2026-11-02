@@ -16,7 +16,7 @@
 
     <properties>
         <java.version>21</java.version>
-        <lego-data.version>1.0.0-SNAPSHOT</lego-data.version>
+        <lego-data.version>1.1.0-SNAPSHOT</lego-data.version>
         <openfeign.version>10.12</openfeign.version>
         <lombok.version>1.18.42</lombok.version>
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
