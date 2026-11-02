@@ -15,7 +15,7 @@
     <description>Lego :: Imaging with Flickr API</description>
 
     <properties>
-        <java.version>22</java.version>
+        <java.version>21</java.version>
         <lego-data.version>1.0.0-SNAPSHOT</lego-data.version>
         <openfeign.version>10.12</openfeign.version>
         <lombok.version>1.18.42</lombok.version>
