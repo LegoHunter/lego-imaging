@@ -14,8 +14,27 @@ public record ImageMetadata(
         ConditionEnum instructionsCondition,
         ConditionEnum itemCondition,
 
-        String caption
+        String caption,
+
+        /** Every keyword as read from the photo, in order, joined with "; ". Null when the photo has none. */
+        String keywords
 ) {
+
+    /** Without the raw keyword list. */
+    public ImageMetadata(
+            String uuid,
+            String externalItemNumber,
+            Boolean primary,
+            Boolean sealed,
+            Boolean builtOnce,
+            ConditionEnum boxCondition,
+            ConditionEnum instructionsCondition,
+            ConditionEnum itemCondition,
+            String caption
+    ) {
+        this(uuid, externalItemNumber, primary, sealed, builtOnce, boxCondition, instructionsCondition, itemCondition,
+                caption, null);
+    }
 
     public boolean hasUuid() {
         return hasText(uuid);
