@@ -336,4 +336,23 @@ class MetadataExtractorServiceTest {
     private byte[] readTestResource(String relativePath) throws Exception {
         return Files.readAllBytes(Path.of("src", "test", "resources", relativePath));
     }
+
+    @org.junit.jupiter.api.Test
+    void keepsTheRawKeywordListInOrderWithoutDuplicates() {
+        MetadataExtractorService service = new MetadataExtractorService();
+        java.util.Set<String> raw = new java.util.LinkedHashSet<>();
+        // IPTC and XMP both report the same keywords.
+        raw.addAll(service.rawKeywords("uuid:abc; bl:6390-1;primary ; bo:true"));
+        raw.addAll(service.rawKeywords("uuid:abc;bl:6390-1;primary;bo:true;location:shelf 4"));
+
+        ImageMetadata metadata = service.toImageMetadata(
+                service.parseKeywordString("uuid:abc; bl:6390-1;primary ; bo:true"), null, raw);
+
+        org.assertj.core.api.Assertions.assertThat(metadata.keywords())
+                .isEqualTo("uuid:abc; bl:6390-1; primary; bo:true; location:shelf 4");
+        org.assertj.core.api.Assertions.assertThat(metadata.isBuiltOnce()).isTrue();
+        org.assertj.core.api.Assertions.assertThat(
+                service.toImageMetadata(java.util.Map.of(), null, java.util.List.of()).keywords()).isNull();
+        org.assertj.core.api.Assertions.assertThat(service.rawKeywords("  ")).isEmpty();
+    }
 }

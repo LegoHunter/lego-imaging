@@ -14,6 +14,11 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Collection;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
@@ -25,6 +30,7 @@ public class MetadataExtractorService {
         try (InputStream is = new ByteArrayInputStream(bytes)) {
             Metadata metadata = ImageMetadataReader.readMetadata(is);
             Map<String, String> keywords = new HashMap<>();
+            Set<String> rawKeywords = new LinkedHashSet<>();
             String caption = null;
 
             for (Directory dir : metadata.getDirectories()) {
@@ -33,6 +39,7 @@ public class MetadataExtractorService {
 
                     if (isKeywordTag(tagName)) {
                         keywords.putAll(parseKeywordString(tag.getDescription()));
+                        rawKeywords.addAll(rawKeywords(tag.getDescription()));
                     }
 
                     if (caption == null && isCaptionTag(tagName)) {
@@ -45,7 +52,7 @@ public class MetadataExtractorService {
                 }
             }
 
-            ImageMetadata imageMetadata = toImageMetadata(keywords, caption);
+            ImageMetadata imageMetadata = toImageMetadata(keywords, caption, rawKeywords);
 
             log.debug(
                     "metadata.extracted keywords={} captionPresent={} uuidPresent={} externalItemPresent={}",
@@ -91,6 +98,18 @@ public class MetadataExtractorService {
     }
 
     ImageMetadata toImageMetadata(Map<String, String> keywords, String caption) {
+        return toImageMetadata(keywords, caption, Set.of());
+    }
+
+    /** The keywords exactly as tagged (trimmed), without the duplicates IPTC and XMP both report. */
+    List<String> rawKeywords(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(raw.split(";")).map(String::trim).filter(keyword -> !keyword.isEmpty()).toList();
+    }
+
+    ImageMetadata toImageMetadata(Map<String, String> keywords, String caption, Collection<String> rawKeywords) {
         String normalizedCaption =
                 trimToNull(caption);
 
@@ -108,7 +127,8 @@ public class MetadataExtractorService {
                 parseConditionKeyword(keywords, "bc", "box_condition", "boxcondition", "box-condition"),
                 parseConditionKeyword(keywords, "ic", "instructions_condition", "instructionscondition", "instructions-condition"),
                 parseConditionKeyword(keywords, "item", "item_condition", "itemcondition", "item-condition"),
-                normalizedCaption
+                normalizedCaption,
+                rawKeywords == null || rawKeywords.isEmpty() ? null : String.join("; ", rawKeywords)
         );
     }
 
