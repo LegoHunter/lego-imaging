@@ -25,6 +25,7 @@ import io.legohunter.imaging.model.HostedPhoto;
 import io.legohunter.imaging.model.HostedPhotoMetadataUpdate;
 import io.legohunter.imaging.model.HostedPhotoUploadMetadata;
 import io.legohunter.imaging.model.HostedPhotoPage;
+import io.legohunter.imaging.model.HostedPhotoSearchRequest;
 import io.legohunter.imaging.model.PhotoMetaDataV1;
 import io.legohunter.imaging.model.PhotoServiceErrorType;
 import io.legohunter.imaging.model.PhotoServiceResponse;
@@ -323,6 +324,51 @@ class FlickrPhotoServiceTest {
                         HostedPhoto::getPrimary
                 )
                 .containsExactly("photo-1", "front.jpg", "Front view", "https://flickr.com/photos/user/photo-1", true);
+    }
+
+    @Test
+    void listPhotosNotInAlbum_mapsFlickrPhotos() throws Exception {
+        Photo photo = new Photo();
+        photo.setId("photo-9");
+        photo.setTitle("loose.jpg");
+        PhotoList<Photo> photos = new PhotoList<>();
+        photos.add(photo);
+        photos.setPage(2);
+        photos.setPages(3);
+        photos.setPerPage(500);
+        photos.setTotal(1001);
+        when(photosInterface.getNotInSet(500, 2)).thenReturn(photos);
+
+        PhotoServiceResponse<HostedPhotoPage> response = flickrPhotoService.listPhotosNotInAlbum(new FlickrServiceRequest<>(
+                HostedPhotoSearchRequest.builder()
+                        .page(2)
+                        .perPage(500)
+                        .build()
+        ));
+
+        assertThat(response.isError()).isFalse();
+        assertThat(response.get().getPage()).isEqualTo(2);
+        assertThat(response.get().getPages()).isEqualTo(3);
+        assertThat(response.get().getTotal()).isEqualTo(1001);
+        assertThat(response.get().getPhotos()).singleElement()
+                .extracting(HostedPhoto::getId, HostedPhoto::getTitle)
+                .containsExactly("photo-9", "loose.jpg");
+    }
+
+    @Test
+    void listPhotosNotInAlbum_reportsProviderFailure() throws Exception {
+        when(photosInterface.getNotInSet(500, 1))
+                .thenThrow(new FlickrException("98", "Invalid auth token"));
+
+        PhotoServiceResponse<HostedPhotoPage> response = flickrPhotoService.listPhotosNotInAlbum(new FlickrServiceRequest<>(
+                HostedPhotoSearchRequest.builder()
+                        .page(1)
+                        .perPage(500)
+                        .build()
+        ));
+
+        assertThat(response.isError()).isTrue();
+        assertThat(response.errorType()).isEqualTo(PhotoServiceErrorType.AUTHENTICATION_FAILED);
     }
 
     @Test

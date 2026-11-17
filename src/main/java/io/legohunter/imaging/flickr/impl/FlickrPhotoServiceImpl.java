@@ -27,6 +27,7 @@ import io.legohunter.imaging.model.HostedPhoto;
 import io.legohunter.imaging.model.HostedPhotoMetadataUpdate;
 import io.legohunter.imaging.model.HostedPhotoUploadMetadata;
 import io.legohunter.imaging.model.HostedPhotoPage;
+import io.legohunter.imaging.model.HostedPhotoSearchRequest;
 import io.legohunter.imaging.model.PhotoMetaDataV1;
 import io.legohunter.imaging.model.PhotoServiceErrorType;
 import io.legohunter.imaging.model.PhotoServiceRequest;
@@ -297,6 +298,33 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
                     default -> value;
                 })
                 .orElse(Flickr.SAFETYLEVEL_SAFE);
+    }
+
+    @Override
+    public PhotoServiceResponse<HostedPhotoPage> listPhotosNotInAlbum(PhotoServiceRequest<HostedPhotoSearchRequest> request) {
+        PhotoServiceResponse<HostedPhotoPage> response;
+        HostedPhotoSearchRequest searchRequest = request.get();
+        try {
+            PhotoList<Photo> photos = withFlickrAuth(() -> photosInterface.getNotInSet(
+                    positiveOrZero(searchRequest.getPerPage()),
+                    positiveOrZero(searchRequest.getPage())
+            ));
+            response = new FlickrServiceResponse<>(HostedPhotoPage.builder()
+                    .photos(Optional.ofNullable(photos)
+                            .map(PhotoList::stream)
+                            .orElseGet(Stream::empty)
+                            .map(this::toHostedPhoto)
+                            .toList())
+                    .page(photos == null ? 0 : photos.getPage())
+                    .pages(photos == null ? 0 : photos.getPages())
+                    .perPage(photos == null ? 0 : photos.getPerPage())
+                    .total(photos == null ? 0 : photos.getTotal())
+                    .build());
+        } catch (FlickrException e) {
+            response = flickrError(e);
+        }
+        log.debug("Flickr Response [{}]", response);
+        return response;
     }
 
     private String textOrDefault(String value, String defaultValue) {
