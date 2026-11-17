@@ -10,6 +10,7 @@ import io.legohunter.imaging.model.HostedAlbumMetadataUpdate;
 import io.legohunter.imaging.model.HostedPhoto;
 import io.legohunter.imaging.model.HostedPhotoMetadataUpdate;
 import io.legohunter.imaging.model.HostedPhotoPage;
+import io.legohunter.imaging.model.HostedPhotoSearchRequest;
 import io.legohunter.imaging.model.PhotoMetaDataV1;
 import io.legohunter.imaging.model.PhotoServiceRequest;
 import io.legohunter.imaging.model.PhotoServiceResponse;
@@ -26,6 +27,12 @@ public interface ImageHostingService {
     PhotoServiceResponse<HostedAlbumPage> listAlbums(PhotoServiceRequest<HostedAlbumSearchRequest> request);
 
     PhotoServiceResponse<HostedPhotoPage> listAlbumPhotos(PhotoServiceRequest<HostedAlbumPhotoSearchRequest> request);
+
+    /**
+     * The account's photos that are in no album. Together with {@link #listAlbums} and {@link #listAlbumPhotos}
+     * this reaches every photo the account holds.
+     */
+    PhotoServiceResponse<HostedPhotoPage> listPhotosNotInAlbum(PhotoServiceRequest<HostedPhotoSearchRequest> request);
 
     PhotoServiceResponse<Void> updateAlbumMembership(PhotoServiceRequest<HostedAlbumMembershipRequest> request);
 
