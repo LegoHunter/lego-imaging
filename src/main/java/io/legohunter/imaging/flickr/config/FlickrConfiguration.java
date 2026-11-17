@@ -10,6 +10,7 @@ import com.flickr4java.flickr.photos.PhotosInterface;
 import com.flickr4java.flickr.photos.upload.UploadInterface;
 import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import com.flickr4java.flickr.uploader.IUploader;
+import io.legohunter.imaging.flickr.impl.FlickrAccountUsageReader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -61,6 +62,11 @@ public class FlickrConfiguration {
     @Bean
     public UploadInterface uploadInterface(Secrets flickrSecrets, Transport flickrTransport) {
         return new UploadInterface(flickrSecrets.getKey(), flickrSecrets.getSecret(), flickrTransport);
+    }
+
+    @Bean
+    public FlickrAccountUsageReader flickrAccountUsageReader(Transport flickrTransport, Secrets flickrSecrets) {
+        return new FlickrAccountUsageReader(flickrTransport, flickrSecrets);
     }
 
     @Bean

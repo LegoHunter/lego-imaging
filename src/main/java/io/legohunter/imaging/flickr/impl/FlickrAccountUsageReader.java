@@ -6,7 +6,6 @@ import com.flickr4java.flickr.Transport;
 import io.legohunter.imaging.flickr.config.FlickrProperties;
 import io.legohunter.imaging.model.HostedAccountUsage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -20,8 +19,10 @@ import java.util.Map;
  * <p>The Flickr client library parses that response but drops {@code upload_count} and {@code upload_limit}, so
  * the call is made through its transport and those two values are read here. A free account reports a limit of
  * 1000; a Pro account reports -1, which means no limit.
+ *
+ * <p>Registered as a bean by {@code FlickrConfiguration}, not by component scanning: services import the Flickr
+ * classes by name, and a scanned class they do not list would be missing at start-up.
  */
-@Component
 @RequiredArgsConstructor
 public class FlickrAccountUsageReader {
     static final String METHOD = "flickr.people.getUploadStatus";
