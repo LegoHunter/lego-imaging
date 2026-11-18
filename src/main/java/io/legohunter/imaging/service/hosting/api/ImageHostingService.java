@@ -1,5 +1,6 @@
 package io.legohunter.imaging.service.hosting.api;
 
+import io.legohunter.imaging.model.HostedAccountUsage;
 import io.legohunter.imaging.model.HostedAlbum;
 import io.legohunter.imaging.model.HostedAlbumCreateRequest;
 import io.legohunter.imaging.model.HostedAlbumPage;
@@ -41,4 +42,7 @@ public interface ImageHostingService {
     PhotoServiceResponse<Void> updatePhotoMetadata(PhotoServiceRequest<HostedPhotoMetadataUpdate> request);
 
     PhotoServiceResponse<HostedPhoto> getPhoto(PhotoServiceRequest<String> request);
+
+    /** How many items the account holds and how many it may hold. */
+    PhotoServiceResponse<HostedAccountUsage> getAccountUsage();
 }

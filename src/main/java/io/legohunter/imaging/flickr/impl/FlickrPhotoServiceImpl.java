@@ -16,6 +16,7 @@ import com.flickr4java.flickr.uploader.UploadMetaData;
 import io.legohunter.imaging.exception.LegoImagingException;
 import io.legohunter.imaging.flickr.api.FlickrPhotoService;
 import io.legohunter.imaging.flickr.model.FlickrServiceResponse;
+import io.legohunter.imaging.model.HostedAccountUsage;
 import io.legohunter.imaging.model.HostedAlbum;
 import io.legohunter.imaging.model.HostedAlbumCreateRequest;
 import io.legohunter.imaging.model.HostedAlbumPage;
@@ -54,6 +55,7 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
     private final PhotosetsInterface photosetsInterface;
     private final PhotosInterface photosInterface;
     private final Auth flickrAuth;
+    private final FlickrAccountUsageReader accountUsageReader;
 
     @Override
     public PhotoServiceResponse<String> uploadPhoto(PhotoServiceRequest<PhotoMetaDataV1> request) {
@@ -320,6 +322,18 @@ public class FlickrPhotoServiceImpl implements FlickrPhotoService {
                     .perPage(photos == null ? 0 : photos.getPerPage())
                     .total(photos == null ? 0 : photos.getTotal())
                     .build());
+        } catch (FlickrException e) {
+            response = flickrError(e);
+        }
+        log.debug("Flickr Response [{}]", response);
+        return response;
+    }
+
+    @Override
+    public PhotoServiceResponse<HostedAccountUsage> getAccountUsage() {
+        PhotoServiceResponse<HostedAccountUsage> response;
+        try {
+            response = new FlickrServiceResponse<>(withFlickrAuth(accountUsageReader::read));
         } catch (FlickrException e) {
             response = flickrError(e);
         }

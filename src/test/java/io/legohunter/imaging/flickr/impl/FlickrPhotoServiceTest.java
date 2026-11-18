@@ -14,6 +14,7 @@ import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import com.flickr4java.flickr.uploader.IUploader;
 import com.flickr4java.flickr.uploader.UploadMetaData;
 import io.legohunter.imaging.flickr.model.FlickrServiceRequest;
+import io.legohunter.imaging.model.HostedAccountUsage;
 import io.legohunter.imaging.model.HostedAlbum;
 import io.legohunter.imaging.model.HostedAlbumCreateRequest;
 import io.legohunter.imaging.model.HostedAlbumPage;
@@ -55,6 +56,7 @@ class FlickrPhotoServiceTest {
     private PhotosetsInterface photosetsInterface;
     private PhotosInterface photosInterface;
     private Auth flickrAuth;
+    private FlickrAccountUsageReader accountUsageReader;
     private FlickrPhotoServiceImpl flickrPhotoService;
 
     @BeforeEach
@@ -67,7 +69,8 @@ class FlickrPhotoServiceTest {
         flickrAuth.setToken("oauth-token");
         flickrAuth.setTokenSecret("oauth-token-secret");
         RequestContext.getRequestContext().setAuth(null);
-        flickrPhotoService = new FlickrPhotoServiceImpl(uploader, photosetsInterface, photosInterface, flickrAuth);
+        accountUsageReader = mock(FlickrAccountUsageReader.class);
+        flickrPhotoService = new FlickrPhotoServiceImpl(uploader, photosetsInterface, photosInterface, flickrAuth, accountUsageReader);
     }
 
     @AfterEach
@@ -324,6 +327,29 @@ class FlickrPhotoServiceTest {
                         HostedPhoto::getPrimary
                 )
                 .containsExactly("photo-1", "front.jpg", "Front view", "https://flickr.com/photos/user/photo-1", true);
+    }
+
+    @Test
+    void getAccountUsage_returnsTheReadersValues() throws Exception {
+        when(accountUsageReader.read()).thenReturn(new HostedAccountUsage(912, 1000));
+
+        PhotoServiceResponse<HostedAccountUsage> response = flickrPhotoService.getAccountUsage();
+
+        assertThat(response.isError()).isFalse();
+        assertThat(response.get().itemCount()).isEqualTo(912);
+        assertThat(response.get().itemLimit()).isEqualTo(1000);
+        assertThat(response.get().limited()).isTrue();
+        assertThat(response.get().remaining()).isEqualTo(88);
+    }
+
+    @Test
+    void getAccountUsage_reportsProviderFailure() throws Exception {
+        when(accountUsageReader.read()).thenThrow(new FlickrException("98", "Invalid auth token"));
+
+        PhotoServiceResponse<HostedAccountUsage> response = flickrPhotoService.getAccountUsage();
+
+        assertThat(response.isError()).isTrue();
+        assertThat(response.errorType()).isEqualTo(PhotoServiceErrorType.AUTHENTICATION_FAILED);
     }
 
     @Test
